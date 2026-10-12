@@ -1,0 +1,10 @@
+{
+  "clients": 2,
+  "separateContexts": true,
+  "hiddenPacketsPrivate": true,
+  "simultaneousShotsIdentical": true,
+  "earlyResolutionMs": 101,
+  "disconnectHandled": true,
+  "untrustedOriginRejected": true,
+  "errors": []
+}

@@ -1,0 +1,82 @@
+{
+  "label": "after",
+  "environment": "Edge headless on Windows; touch/viewport/DPR emulation. Frame timings are host measurements, not phone GPU, battery or thermal evidence.",
+  "samples": [
+    {
+      "profile": "desktop",
+      "phase": "position",
+      "frames": 119,
+      "frameMedianMs": 8.300000000000068,
+      "frameP95Ms": 8.5,
+      "drawCalls": 44,
+      "triangles": 4334,
+      "geometries": 44,
+      "textures": 1,
+      "renderWidth": 1440,
+      "renderHeight": 1000,
+      "pixelRatio": 1,
+      "shadowMap": true,
+      "renderer": "WebKit WebGL"
+    },
+    {
+      "profile": "desktop",
+      "phase": "reveal",
+      "frames": 119,
+      "frameMedianMs": 8.300000000000182,
+      "frameP95Ms": 8.5,
+      "drawCalls": 80,
+      "triangles": 26018,
+      "geometries": 81,
+      "textures": 1,
+      "renderWidth": 1440,
+      "renderHeight": 1000,
+      "pixelRatio": 1,
+      "shadowMap": true,
+      "renderer": "WebKit WebGL"
+    },
+    {
+      "profile": "mobile-emulated-DPR3",
+      "phase": "position",
+      "frames": 119,
+      "frameMedianMs": 8.300000000000068,
+      "frameP95Ms": 8.5,
+      "drawCalls": 41,
+      "triangles": 4274,
+      "geometries": 41,
+      "textures": 1,
+      "renderWidth": 487,
+      "renderHeight": 1055,
+      "pixelRatio": 1.25,
+      "shadowMap": true,
+      "renderer": "WebKit WebGL"
+    },
+    {
+      "profile": "mobile-emulated-DPR3",
+      "phase": "reveal",
+      "frames": 119,
+      "frameMedianMs": 8.300000000000182,
+      "frameP95Ms": 8.5,
+      "drawCalls": 77,
+      "triangles": 25958,
+      "geometries": 78,
+      "textures": 1,
+      "renderWidth": 487,
+      "renderHeight": 1055,
+      "pixelRatio": 1.25,
+      "shadowMap": true,
+      "renderer": "WebKit WebGL"
+    }
+  ],
+  "bundle": [
+    {
+      "file": "index-C3jokyHE.css",
+      "bytes": 14187,
+      "gzipBytes": 3949
+    },
+    {
+      "file": "index-CtokzQCw.js",
+      "bytes": 519693,
+      "gzipBytes": 135542
+    }
+  ]
+}
