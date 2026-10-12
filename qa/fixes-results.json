@@ -1,0 +1,63 @@
+{
+  "oldCasualtyHidden": true,
+  "currentDeathVisible": true,
+  "duel": {
+    "radius": 1.05,
+    "duel": true,
+    "visible": 2,
+    "coreScale": 0.3506233474479879
+  },
+  "pointBlank": {
+    "eliminated": 0,
+    "hits": [
+      null,
+      null
+    ],
+    "finiteTransforms": true
+  },
+  "portrait": [
+    {
+      "x": 18,
+      "y": 764,
+      "width": 57,
+      "height": 60
+    },
+    {
+      "x": 83,
+      "y": 764,
+      "width": 57,
+      "height": 60
+    },
+    {
+      "x": 152,
+      "y": 764,
+      "width": 220,
+      "height": 60
+    }
+  ],
+  "landscape": [
+    {
+      "x": 18,
+      "y": 316,
+      "width": 57,
+      "height": 60
+    },
+    {
+      "x": 83,
+      "y": 316,
+      "width": 57,
+      "height": 60
+    },
+    {
+      "x": 506,
+      "y": 316,
+      "width": 320,
+      "height": 60
+    }
+  ],
+  "multiTouchMovementPreserved": true,
+  "touchAimIndependentOfMovement": true,
+  "mainFrameRate": 60.58588548601864,
+  "errors": [],
+  "note": "Windows Edge headless. Mobile touch/DPR/rotation emulated, not physical device."
+}

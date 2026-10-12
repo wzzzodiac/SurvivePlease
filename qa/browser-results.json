@@ -1,0 +1,14 @@
+{
+  "errors": [],
+  "result": "LAST ANIMAL STANDING\nPip survives.\n\nA good angle changes everything.\n\n11 rounds · 3 shrinks\n\nPlay again ↗",
+  "mobileControls": true,
+  "desktop": {
+    "width": 1440,
+    "height": 1000
+  },
+  "mobile": {
+    "width": 390,
+    "height": 844
+  },
+  "note": "Edge headless; mobile viewport/touch emulation, not physical device."
+}
