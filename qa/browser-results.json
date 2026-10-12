@@ -1,0 +1,14 @@
+{
+  "errors": [],
+  "result": "ÚLTIMO ANIMAL EN PIE\nLuna sobrevive.\n\nUn buen ángulo lo cambia todo.\n\n4 rondas · 1 contracciones\n\nOtra partida ↗",
+  "mobileControls": true,
+  "desktop": {
+    "width": 1440,
+    "height": 1000
+  },
+  "mobile": {
+    "width": 390,
+    "height": 844
+  },
+  "note": "Edge headless; mobile viewport/touch emulation, not physical device."
+}
