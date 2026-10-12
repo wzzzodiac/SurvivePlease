@@ -83,6 +83,28 @@ try {
   assert.equal(duel.visible, 2);
   assert.ok(Math.abs(duel.coreScale - 0.35) < 0.01);
   await page.screenshot({ path: "qa/final-duel-desktop.png" });
+  const pointBlank = await page.evaluate(async () => {
+    const { createGame, player, resolve, view, CONFIG } = await import("/shared/game.js");
+    qaScene.draw(null, "p0", 0, 1 / 60, true);
+    qaGame = createGame([player("p0", "Miso"), player("p1", "Pip", "penguin")]);
+    qaGame.radius = CONFIG.finalRadius;
+    qaGame.rings = 1;
+    qaGame.duel = true;
+    qaGame.players.forEach((p) => { p.s = 0.1; p.aim = 0; });
+    resolve(qaGame);
+    qaGame.clock = 1;
+    qaView = view(qaGame, "p0");
+    qaDraw(4);
+    return {
+      eliminated: qaGame.eliminated.length,
+      hits: qaGame.shots.map((s) => s.hit),
+      finiteTransforms: qaScene.shotGroup.children.every((o) => o.matrixWorld.elements.every(Number.isFinite)),
+    };
+  });
+  assert.equal(pointBlank.eliminated, 2);
+  assert.deepEqual(pointBlank.hits, ["p1", "p0"]);
+  assert.ok(pointBlank.finiteTransforms);
+  await page.screenshot({ path: "qa/point-blank.png" });
   const mobile = await browser.newContext({
     viewport: { width: 390, height: 844 },
     deviceScaleFactor: 3,
@@ -92,7 +114,7 @@ try {
   const mp = await mobile.newPage();
   mp.on("pageerror", (e) => errors.push(e.message));
   await mp.goto("http://localhost:5173");
-  await mp.getByRole("button", { name: "Jugar práctica" }).tap();
+  await mp.getByRole("button", { name: "Play practice" }).tap();
   await mp.waitForTimeout(400);
   async function dockCheck() {
     const buttons = await mp.locator(".bottom-hud button").all();
@@ -152,7 +174,7 @@ try {
     type: "touchEnd",
     touchPoints: [],
   });
-  await mp.getByRole("button", { name: "DISPARAR" }).tap();
+  await mp.getByRole("button", { name: "FIRE" }).tap();
   await mp.waitForTimeout(150);
   assert.ok(await mp.locator("#shoot").isDisabled());
   await mp.setViewportSize({ width: 844, height: 390 });
@@ -187,6 +209,7 @@ try {
         oldCasualtyHidden: true,
         currentDeathVisible: true,
         duel,
+        pointBlank,
         portrait,
         landscape,
         multiTouchMovementPreserved: true,

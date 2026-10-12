@@ -23,13 +23,13 @@ const $ = (s) => document.querySelector(s),
         })[c],
     );
 $("#app").innerHTML =
-  '<main id="stage" aria-label="Arena 3D"></main><div id="labels"></div><div id="ui"></div><div id="toast" role="status"></div>';
+  '<main id="stage" aria-label="3D arena"></main><div id="labels"></div><div id="ui"></div><div id="toast" role="status"></div>';
 let scene;
 try {
   scene = new ArenaScene($("#stage"), $("#labels"));
 } catch (e) {
   $("#ui").innerHTML =
-    '<div class="fatal">Tu navegador necesita WebGL para jugar. Activa la aceleración gráfica y recarga.</div>';
+    '<div class="fatal">Your browser needs WebGL to play. Enable graphics acceleration and reload.</div>';
   throw e;
 }
 let route = "home",
@@ -51,10 +51,10 @@ let route = "home",
   pointerAim = null,
   lastNow = performance.now();
 const names = {
-  fox: "Zorro",
-  rabbit: "Conejo",
-  penguin: "Pingüino",
-  frog: "Rana",
+  fox: "Fox",
+  rabbit: "Rabbit",
+  penguin: "Penguin",
+  frog: "Frog",
 };
 function toast(message) {
   $("#toast").textContent = message;
@@ -69,7 +69,7 @@ function identity() {
   return { name, animal: selected };
 }
 function choices() {
-  return `<fieldset class="animals"><legend>Elige tu pequeño superviviente</legend>${ANIMALS.map((a, i) => `<button type="button" data-animal="${a}" class="animal ${selected === a ? "selected" : ""}" aria-pressed="${selected === a}" style="--animal:${PALETTE[i]}"><span>${["◆", "♧", "◒", "●"][i]}</span>${names[a]}</button>`).join("")}</fieldset>`;
+  return `<fieldset class="animals"><legend>Choose your little survivor</legend>${ANIMALS.map((a, i) => `<button type="button" data-animal="${a}" class="animal ${selected === a ? "selected" : ""}" aria-pressed="${selected === a}" style="--animal:${PALETTE[i]}"><span>${["◆", "♧", "◒", "●"][i]}</span>${names[a]}</button>`).join("")}</fieldset>`;
 }
 function badge() {
   return '<a class="brand" href="#" data-action="home"><span class="brand-icon">S<span>!</span></span><span>SURVIVE<span class="please">PLEASE</span></span></a>';
@@ -92,17 +92,17 @@ function render() {
   $("#app").className = route === "play" ? "playing" : "menu";
   if (route === "home" || route === "online") {
     $("#ui").innerHTML =
-      `<header>${badge()}<span class="edition">PROTO 01 <i></i> ARENA DE BOLSILLO</span><button class="sound" data-action="sound" aria-label="Activar o desactivar sonido">${muted ? "♪ OFF" : "♪ ON"}</button></header><section class="welcome"><div class="eyebrow"><span></span> PEQUEÑOS ANIMALES. GRANDES SOSPECHAS.</div><h1>Apunta.<br> Respira.<br> <em>Sobrevive.</em></h1><p class="intro">Nadie sabe dónde estás.<br>Hasta que todos disparan.</p><div class="setup"><label for="player-name">TU NOMBRE</label><input id="player-name" maxlength="18" placeholder="Miso" value="${escape(name)}" autocomplete="nickname">${choices()}${route === "home" ? '<button class="primary" data-action="practice">Jugar práctica <span>↗</span></button><button class="secondary" data-action="online">Jugar con amigos <span>2—8</span></button>' : `<div class="online-form"><label for="server-url">SERVIDOR WEBSOCKET</label><input id="server-url" value="${escape(localStorage.getItem("sp-server") || import.meta.env.VITE_WS_URL || "ws://localhost:3001")}" placeholder="wss://tu-servidor"><button class="primary" data-action="create">Crear sala <span>+</span></button><div class="join"><input id="room-code" aria-label="Código de sala" maxlength="6" placeholder="CÓDIGO"><button class="secondary" data-action="join">Unirme ↗</button></div><button class="text-button" data-action="home">← Volver</button></div>`}</div><p class="micro">${route === "home" ? "Práctica con 3 bots · Sin cuenta · Sin esperas" : "El multijugador requiere un servidor disponible."}</p></section><aside class="world-note"><span class="coordinate">ISLA 001 / EL CLARO</span><h2>Un lugar tranquilo.<br>Durante veinte segundos.</h2><p>Muévete por el borde. Elige tu ángulo.<br>La revelación lo cambia todo.</p></aside><footer><span><b>01</b> MUÉVETE EN SECRETO</span><span><b>02</b> FIJA TU DISPARO</span><span><b>03</b> TODOS A LA VEZ</span><small>HECHO PARA JUGAR OTRA.</small></footer>`;
+      `<header>${badge()}<span class="edition">PROTO 01 <i></i> POCKET ARENA</span><button class="sound" data-action="sound" aria-label="Toggle sound">${muted ? "♪ OFF" : "♪ ON"}</button></header><section class="welcome"><div class="eyebrow"><span></span> SMALL ANIMALS. BIG SUSPICIONS.</div><h1>Aim.<br> Breathe.<br> <em>Survive.</em></h1><p class="intro">Nobody knows where you are.<br>Until everyone fires.</p><div class="setup"><label for="player-name">YOUR NAME</label><input id="player-name" maxlength="18" placeholder="Miso" value="${escape(name)}" autocomplete="nickname">${choices()}${route === "home" ? '<button class="primary" data-action="practice">Play practice <span>↗</span></button><button class="secondary" data-action="online">Play with friends <span>2—8</span></button>' : `<div class="online-form"><label for="server-url">WEBSOCKET SERVER</label><input id="server-url" value="${escape(localStorage.getItem("sp-server") || import.meta.env.VITE_WS_URL || "ws://localhost:3001")}" placeholder="wss://your-server"><button class="primary" data-action="create">Create room <span>+</span></button><div class="join"><input id="room-code" aria-label="Room code" maxlength="6" placeholder="CODE"><button class="secondary" data-action="join">Join ↗</button></div><button class="text-button" data-action="home">← Back</button></div>`}</div><p class="micro">${route === "home" ? "Practice with 3 bots · No account · No waiting" : "Multiplayer needs a running server."}</p></section><aside class="world-note"><span class="coordinate">ISLAND 001 / THE CLEARING</span><h2>A quiet place.<br>For twenty seconds.</h2><p>Move along the edge. Pick your angle.<br>The reveal changes everything.</p></aside><footer><span><b>01</b> MOVE IN SECRET</span><span><b>02</b> LOCK YOUR SHOT</span><span><b>03</b> ALL AT ONCE</span><small>MADE FOR ONE MORE.</small></footer>`;
     return;
   }
   if (route === "lobby") {
     $("#ui").innerHTML =
-      `<header>${badge()}<button class="text-button" data-action="home">Salir de la sala ↗</button></header><section class="lobby-panel"><div class="eyebrow">PUNTO DE ENCUENTRO</div><h1>La pandilla.</h1><button class="code" data-action="copy" aria-label="Copiar código de sala">${escape(room.code)} <small>COPIAR CÓDIGO ↗</small></button><p>Comparte el código y la dirección del servidor.</p><ul class="roster">${room.lobby.map((p, i) => `<li><span class="avatar" style="background:${PALETTE[i]}">${names[p.animal]?.slice(0, 1)}</span><strong>${escape(p.name)} ${p.id === you ? "(tú)" : ""}</strong><span>${p.ready ? "✓ Listo" : "Preparándose"}</span></li>`).join("")}</ul><button class="primary" data-action="ready">${room.lobby.find((p) => p.id === you)?.ready ? "Ya no estoy listo" : "Estoy listo ✓"}</button>${room.host === you ? '<button class="secondary" data-action="start">Iniciar partida ↗</button>' : '<p class="micro">El anfitrión iniciará cuando todos estén listos.</p>'}<p class="micro">${room.lobby.length}/8 animales · Mínimo 2 · Todos listos</p></section>`;
+      `<header>${badge()}<button class="text-button" data-action="home">Leave room ↗</button></header><section class="lobby-panel"><div class="eyebrow">MEETING POINT</div><h1>The crew.</h1><button class="code" data-action="copy" aria-label="Copy room code">${escape(room.code)} <small>COPY CODE ↗</small></button><p>Share the code and server address.</p><ul class="roster">${room.lobby.map((p, i) => `<li><span class="avatar" style="background:${PALETTE[i]}">${names[p.animal]?.slice(0, 1)}</span><strong>${escape(p.name)} ${p.id === you ? "(you)" : ""}</strong><span>${p.ready ? "✓ Ready" : "Getting ready"}</span></li>`).join("")}</ul><button class="primary" data-action="ready">${room.lobby.find((p) => p.id === you)?.ready ? "Not ready" : "Ready ✓"}</button>${room.host === you ? '<button class="secondary" data-action="start">Start match ↗</button>' : '<p class="micro">The host will start when everyone is ready.</p>'}<p class="micro">${room.lobby.length}/8 animals · Minimum 2 · Everyone ready</p></section>`;
     return;
   }
   if (route === "play" && g) {
     $("#ui").innerHTML =
-      `<header>${badge()}<div class="mode-tag">${local ? "PRÁCTICA / 3 BOTS" : "SALA / " + escape(room?.code || "")} <i></i></div><button class="text-button" data-action="home">Salir ↗</button></header><div class="match-top"><div class="round"><span>RONDA</span><strong>${String(g.round).padStart(2, "0")}</strong></div><div class="phase"><span id="phase-label"></span><strong id="timer"></strong><div class="time-track"><i id="time-fill"></i></div></div><div class="round right"><span>EN PIE</span><strong id="alive"></strong></div></div><aside class="match-note"><span class="eyebrow">EL CLARO</span><p id="hint"></p><div id="shrink-notice"></div></aside><div id="phase-banner" role="status"></div><div class="bottom-hud"><div class="control-help"><b>A / D</b> moverte por el borde<br><b>RATÓN</b> apuntar · <b>ESPACIO</b> fijar</div><div class="touch-move"><button data-hold="-1" aria-label="Mover a la izquierda">←</button><button data-hold="1" aria-label="Mover a la derecha">→</button></div><div class="shoot-area"><div id="afk" role="status"></div><button id="shoot" class="primary" data-action="shoot">FIJAR DISPARO <span>↗</span></button><small id="shot-status"></small></div><div class="touch-help">Toca la arena<br>para apuntar</div><div class="ring-count"><span>ANILLOS</span><b>${g.rings}/${g.initialRings}</b></div></div><div id="result-overlay"></div>`;
+      `<header>${badge()}<div class="mode-tag">${local ? "PRACTICE / 3 BOTS" : "ROOM / " + escape(room?.code || "")} <i></i></div><button class="text-button" data-action="home">Leave ↗</button></header><div class="match-top"><div class="round"><span>ROUND</span><strong>${String(g.round).padStart(2, "0")}</strong></div><div class="phase"><span id="phase-label"></span><strong id="timer"></strong><div class="time-track"><i id="time-fill"></i></div></div><div class="round right"><span>ALIVE</span><strong id="alive"></strong></div></div><aside class="match-note"><span class="eyebrow">THE CLEARING</span><p id="hint"></p><div id="shrink-notice"></div></aside><div id="phase-banner" role="status"></div><div class="bottom-hud"><div class="control-help"><b>A / D</b> move along the edge<br><b>MOUSE</b> aim · <b>SPACE</b> lock</div><div class="touch-move"><button data-hold="-1" aria-label="Move left">←</button><button data-hold="1" aria-label="Move right">→</button></div><div class="shoot-area"><div id="afk" role="status"></div><button id="shoot" class="primary" data-action="shoot">LOCK SHOT <span>↗</span></button><small id="shot-status"></small></div><div class="touch-help">Tap the arena<br>to aim</div><div class="ring-count"><span>RINGS</span><b>${g.rings}/${g.initialRings}</b></div></div><div id="result-overlay"></div>`;
     updateHUD();
   }
 }
@@ -113,11 +113,11 @@ function updateHUD() {
     alive = g.players.filter((p) => p.alive).length,
     phase = g.phase;
   $("#phase-label").textContent = {
-    position: "POSICIÓN OCULTA",
-    reveal: "LA REVELACIÓN",
-    results: "RESULTADO",
-    shrink: "LA ISLA SE REDUCE",
-    finished: "FIN DE PARTIDA",
+    position: "HIDDEN POSITIONS",
+    reveal: "THE REVEAL",
+    results: "RESULTS",
+    shrink: "THE ISLAND SHRINKS",
+    finished: "MATCH OVER",
   }[phase];
   $("#timer").textContent =
     phase === "position"
@@ -134,57 +134,57 @@ function updateHUD() {
     phase === "position"
       ? p?.alive
         ? scene.mobile
-          ? "← → para moverte. Toca la arena para apuntar."
-          : "Tus rivales están ocultos. Predice su próximo movimiento."
-        : "Has sido eliminado. La siguiente revelación mostrará el duelo."
-      : "Todas las posiciones, al descubierto.";
+          ? "← → to move. Tap the arena to aim."
+          : "Your rivals are hidden. Predict their next move."
+        : "You are out. Watch the next reveal."
+      : "All positions revealed.";
   $("#shrink-notice").textContent =
     g.round % 3 === 0 && (g.rings > 1 || (!g.duel && alive === 2))
       ? g.rings === 1
-        ? "↓ Duelo en el núcleo al terminar esta ronda"
-        : "↓ Contracción al terminar esta ronda"
+        ? "↓ Core duel after this round"
+        : "↓ Shrink after this round"
       : "";
-  $(".ring-count span").textContent = g.duel ? "NÚCLEO" : "ANILLOS";
+  $(".ring-count span").textContent = g.duel ? "CORE" : "RINGS";
   $(".ring-count b").textContent = g.duel
-    ? "DUELO"
+    ? "DUEL"
     : g.rings + "/" + g.initialRings;
   const shoot = $("#shoot");
   shoot.disabled = phase !== "position" || !p?.alive || p.locked;
   const shootLabel = p?.locked
     ? scene.mobile
-      ? "FIJADO <span>✓</span>"
-      : "DISPARO FIJADO <span>✓</span>"
+      ? "LOCKED <span>✓</span>"
+      : "SHOT LOCKED <span>✓</span>"
     : scene.mobile
-      ? "DISPARAR <span>↗</span>"
-      : "FIJAR DISPARO <span>↗</span>";
+      ? "FIRE <span>↗</span>"
+      : "LOCK SHOT <span>↗</span>";
   if (shoot.innerHTML !== shootLabel) shoot.innerHTML = shootLabel;
   $("#shot-status").textContent =
     phase === "position"
       ? p?.locked
-        ? "Posición y ángulo bloqueados. Esperando al resto."
-        : "Tu disparo saldrá con los demás."
+        ? "Position and aim locked. Waiting for the others."
+        : "Your shot fires with everyone else's."
       : phase === "reveal"
-        ? "Todos los disparos se resuelven simultáneamente."
+        ? "All shots resolve simultaneously."
         : "";
   $("#afk").textContent =
     p?.afk >= 2 && p.alive
-      ? "¡Muévete! Otra ronda inmóvil te elimina."
+      ? "Move! One more inactive round will eliminate you."
       : p?.afk === 1 && p.alive
-        ? "Muévete al menos 0,7 m esta ronda."
+        ? "Move at least 0.7 m this round."
         : "";
   const kills = g.eliminated
     .map(
       (e) =>
-        `${g.players.find((p) => p.id === e.id)?.name || "Animal"} ${e.by === "AFK" ? "· inactividad" : "· eliminado"}`,
+        `${g.players.find((p) => p.id === e.id)?.name || "Animal"} ${e.by === "AFK" ? "· inactivity" : "· eliminated"}`,
     )
     .join(" / ");
   const banner =
     phase === "reveal"
-      ? "<span>AHORA NOS VEMOS.</span>"
+      ? "<span>NOW WE SEE YOU.</span>"
       : phase === "results"
-        ? `<span>${kills ? escape(kills) : "Nadie cae. La tensión sube."}</span>`
+        ? `<span>${kills ? escape(kills) : "Nobody falls. The tension rises."}</span>`
         : phase === "shrink"
-          ? "<span>MENOS ESPACIO. MÁS NERVIOS.</span>"
+          ? "<span>LESS SPACE. MORE NERVES.</span>"
           : "";
   if ($("#phase-banner").innerHTML !== banner) {
     $("#phase-banner").innerHTML = banner;
@@ -192,7 +192,7 @@ function updateHUD() {
   if (phase === "finished" && !$("#result-overlay").firstElementChild) {
     const win = g.players.find((p) => p.id === g.winner);
     $("#result-overlay").innerHTML =
-      `<section class="end-card"><div class="eyebrow">${g.draw ? "NADIE SE LO ESPERABA" : "ÚLTIMO ANIMAL EN PIE"}</div><h1>${g.draw ? "¡Empate!" : escape(win?.name || "Ganador") + " sobrevive."}</h1><p>${g.draw ? "Todos cayeron en la misma resolución." : "Un buen ángulo lo cambia todo."}</p><p class="micro">${g.round} rondas · ${g.initialRings - g.rings + (g.duel ? 1 : 0)} contracciones</p><button class="primary" data-action="${local ? "practice" : "home"}">${local ? "Otra partida ↗" : "Volver al menú ↗"}</button></section>`;
+      `<section class="end-card"><div class="eyebrow">${g.draw ? "NOBODY SAW THAT COMING" : "LAST ANIMAL STANDING"}</div><h1>${g.draw ? "Draw!" : escape(win?.name || "Winner") + " survives."}</h1><p>${g.draw ? "Everyone fell in the same reveal." : "A good angle changes everything."}</p><p class="micro">${g.round} rounds · ${g.initialRings - g.rings + (g.duel ? 1 : 0)} shrinks</p><button class="primary" data-action="${local ? "practice" : "home"}">${local ? "Play again ↗" : "Back to menu ↗"}</button></section>`;
   } else if (phase !== "finished") $("#result-overlay").innerHTML = "";
   if (phase !== lastPhase) {
     lastPhase = phase;
@@ -259,13 +259,13 @@ function connect(type) {
   try {
     const parsed = new URL(url);
     if (!["ws:", "wss:"].includes(parsed.protocol))
-      throw Error("Usa una dirección ws:// o wss://");
+      throw Error("Use a ws:// or wss:// address");
     if (location.protocol === "https:" && parsed.protocol !== "wss:")
-      throw Error("Una página HTTPS necesita un servidor wss://");
+      throw Error("An HTTPS page needs a wss:// server");
     if (socket) socket.close();
     socket = new WebSocket(url);
     localStorage.setItem("sp-server", url);
-    toast("Conectando al servidor…");
+    toast("Connecting to server…");
     socket.onopen = () => send({ type, ...who, code });
     socket.onmessage = (e) => {
       let m;
@@ -289,13 +289,13 @@ function connect(type) {
       }
     };
     socket.onerror = () =>
-      toast("No se pudo conectar. Comprueba el servidor y su dirección.");
+      toast("Could not connect. Check the server and its address.");
     socket.onclose = () => {
       if (route === "play" || route === "lobby") {
         reset();
         route = "online";
         render();
-        toast("Conexión cerrada. Puedes volver a unirte a una sala nueva.");
+        toast("Connection closed. You can join a new room.");
       }
     };
   } catch (e) {
@@ -330,7 +330,7 @@ document.addEventListener("click", (e) => {
   if (action === "copy")
     navigator.clipboard
       ?.writeText(room.code)
-      .then(() => toast("Código copiado"))
+      .then(() => toast("Room code copied."))
       .catch(() => toast(room.code));
   if (action === "sound") {
     muted = !muted;

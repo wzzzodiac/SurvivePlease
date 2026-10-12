@@ -59,6 +59,36 @@ test("ray misses behind and outside radius, hits the closest front surface", () 
   resolve(g);
   assert.equal(g.shots[0].hit, "b");
 });
+test("point-blank rays hit overlapping circles in every direction", () => {
+  const origin = { x: 0, z: 0 };
+  for (const target of [origin, { x: -0.2, z: 0 }, { x: 0, z: 0.2 }]) {
+    for (const angle of [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2])
+      assert.equal(rayHit(origin, angle, target), 0);
+  }
+  assert.equal(rayHit(origin, 0, { x: -CONFIG.hitRadius - 0.001, z: 0 }), null);
+});
+
+test("overlapping players eliminate each other simultaneously on every arena size", () => {
+  for (const radius of [duel().radius, CONFIG.finalRadius]) {
+    for (const gap of [0, 0.001]) {
+      for (const reverse of [false, true]) {
+        const g = duel();
+        g.radius = radius;
+        g.players[0].s = 0.1;
+        g.players[1].s = 0.1 + gap;
+        g.players[0].aim = 0;
+        g.players[1].aim = Math.PI;
+        if (reverse) g.players.reverse();
+        resolve(g);
+        assert.ok(g.players.every((p) => !p.alive));
+        assert.ok(g.shots.every((shot) => shot.hit !== shot.id && shot.hit !== null));
+        advance(g, 4.7);
+        assert.equal(g.draw, true);
+      }
+    }
+  }
+});
+
 test("continuous movement remains on hexagon edges, including wrap and corners", () => {
   const g = duel();
   input(g, "a", { move: 1 });

@@ -2,6 +2,8 @@
 
 **Muévete en secreto. Fija tu disparo. Todos a la vez.**
 
+Interfaz del juego íntegramente en inglés.
+
 Prototipo web 3D de estrategia y predicción: animales de juguete en una arena hexagonal flotante. Modelos procedurales originales; sin assets de Roblox.
 
 ![Menú de escritorio](qa/desktop-menu.png)
@@ -15,13 +17,13 @@ npm ci
 npm run dev
 ```
 
-Abre **http://localhost:5173** y pulsa **Jugar práctica**. Tres bots permiten jugar una partida completa sin backend. Para multijugador, abre otra terminal:
+Abre **http://localhost:5173** y pulsa **Play practice**. Tres bots permiten jugar una partida completa sin backend. Para multijugador, abre otra terminal:
 
 ```sh
 npm run server
 ```
 
-En dos navegadores o sesiones independientes, entra en **Jugar con amigos**, usa `ws://localhost:3001`, crea una sala y comparte su código. Todos deben pulsar **Estoy listo**; el anfitrión pulsa **Iniciar partida**. Para otra partida online, vuelve al menú y crea una nueva sala.
+En dos navegadores o sesiones independientes, entra en **Play with friends**, usa `ws://localhost:3001`, crea una sala y comparte su código. Todos deben pulsar **Ready**; el anfitrión pulsa **Start match**. Para otra partida online, vuelve al menú y crea una nueva sala.
 
 Desde otro dispositivo de la red, utiliza la IP del equipo en ambos enlaces, por ejemplo `http://192.168.1.20:5173` y `ws://192.168.1.20:3001`. Añade explícitamente el origen del frontend a `ALLOWED_ORIGINS` antes de iniciar el backend. No se han modificado reglas del firewall.
 
@@ -31,7 +33,7 @@ Desde otro dispositivo de la red, utiliza la IP del equipo en ambos enlaces, por
 | --- | --- | --- |
 | Recorrer el perímetro | A / D, o flechas | Mantener ← / → |
 | Apuntar | Ratón sobre la arena | Tocar o arrastrar sobre la arena |
-| Fijar posición y disparo | Botón, espacio, Enter o clic en la arena | Botón **DISPARAR** |
+| Fijar posición y disparo | Botón, espacio, Enter o clic en la arena | Botón **FIRE** |
 
 Al fijar, quedas bloqueado hasta la siguiente ronda. El disparo sale con todos los demás. Si no confirmas, se registra el ángulo actual al vencer el tiempo: no pierdes por olvidar el botón.
 
@@ -41,7 +43,7 @@ Al fijar, quedas bloqueado hasta la siguiente ronda. El disparo sale con todos l
 - Movimiento continuo por los seis bordes, incluyendo esquinas. Sin entrada al interior.
 - Posicionamiento oculto de hasta 20 segundos. Termina antes si todos los vivos confirman.
 - Revelación de personajes y nombres, pausa visual breve, disparos simultáneos, impactos, resultados y siguiente ronda. Los eliminados se ven caer únicamente en su propia resolución; después desaparecen y no vuelven a caer en revelaciones posteriores.
-- Rayos contra el primer círculo válido de radio 0,48 m. Una sola instantánea para todos: también dispara quien muere en esa resolución. Hay eliminaciones mutuas y empate si no sobrevive nadie.
+- Rayos contra el primer círculo válido de radio 0,48 m. Una sola instantánea para todos: también dispara quien muere en esa resolución. Hay eliminaciones mutuas y empate si no sobrevive nadie. Si el disparo nace dentro del área de impacto de otro personaje, el contacto cuenta como impacto inmediato, incluso si están superpuestos; no se impone una separación artificial.
 - 3 anillos para 2–4 participantes, 5 para 5–6, 7 para 7–8. Contracción cada tres rondas, manteniendo la coordenada proporcional del perímetro y su ángulo. Advertencia previa y transición animada.
 - Cada contracción resta 3 segundos; mínimo 7 segundos. Tras alcanzar un anillo y quedar dos supervivientes, la siguiente contracción periódica lleva al **núcleo final** (radio 1,05 m frente a los 3 m del último anillo normal). El núcleo mantiene rondas de 7 segundos y no vuelve a encogerse; se reduce la velocidad lineal para conservar el control angular.
 - Anti-AFK: máxima excursión real desde el punto inicial de la ronda, sobre el perímetro. Menos de 0,7 m incrementa el contador; dos rondas avisan, tres eliminan. Pulsaciones o vibraciones de milímetros no cuentan. Movimiento suficiente reinicia el contador.
@@ -84,7 +86,7 @@ node qa/fixes.mjs
 node qa/profile.mjs after
 ```
 
-18 pruebas: muertes visibles una sola vez, núcleo final y límites, confirmación anticipada, timeout, eliminaciones simultáneas, primer impacto, movimiento, contracción, mínimo, AFK, privacidad, validación y límites de salas. La prueba de navegador juega una práctica completa hasta el resultado y captura escritorio (1440×1000) y móvil emulado (390×844). La prueba online usa dos contextos de Edge independientes y conexiones WebSocket reales: lobby, movimiento, resolución anticipada, paquetes privados, rayos idénticos, desconexión y rechazo de origen no autorizado.
+20 pruebas: muertes visibles una sola vez, núcleo final y límites, confirmación anticipada, timeout, eliminaciones simultáneas, primer impacto, movimiento, contracción, mínimo, AFK, privacidad, validación y límites de salas. La prueba de navegador juega una práctica completa hasta el resultado y captura escritorio (1440×1000) y móvil emulado (390×844). La prueba online usa dos contextos de Edge independientes y conexiones WebSocket reales: lobby, movimiento, resolución anticipada, paquetes privados, rayos idénticos, desconexión y rechazo de origen no autorizado.
 
 Resultados: [navegador](qa/browser-results.json), [multijugador](qa/multiplayer-results.json). Capturas: [fase oculta](qa/desktop-hidden.png), [revelación](qa/desktop-reveal.png), [resultado](qa/desktop-results.png), [móvil](qa/mobile-hidden.png), [lobby online](qa/multiplayer-lobby.png).
 
@@ -92,7 +94,7 @@ Resultados: [navegador](qa/browser-results.json), [multijugador](qa/multiplayer-
 
 ## Revisión móvil
 
-Se conservan tres botones inferiores: **←**, **→** y **DISPARAR**, con el mismo diseño. El apuntado sigue siendo táctil sobre la arena. Los botones miden al menos 57×60 píxeles CSS; probados en vertical (390×844) y horizontal (844×390). Una segunda pulsación para apuntar no interrumpe el dedo que mantiene el movimiento. Advertencias y ayudas quedan fuera de la fila de controles.
+Se conservan tres botones inferiores: **←**, **→** y **FIRE**, con el mismo diseño. El apuntado sigue siendo táctil sobre la arena. Los botones miden al menos 57×60 píxeles CSS; probados en vertical (390×844) y horizontal (844×390). Una segunda pulsación para apuntar no interrumpe el dedo que mantiene el movimiento. Advertencias y ayudas quedan fuera de la fila de controles.
 
 Perfil móvil automático para puntero táctil o pantalla estrecha: DPR máximo 1,25 (escritorio 1,75), sombras suaves de 1024² (escritorio 2048²), render limitado a 60 cuadros/s y HUD actualizado a 10 Hz. Se agrupan piezas estáticas por material e instancian los postes de cada anillo. La guía de apuntado reutiliza sus buffers en vez de destruir y crear geometría cada cuadro.
 
