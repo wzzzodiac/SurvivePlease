@@ -14,6 +14,7 @@ export const CONFIG = Object.freeze({
   afkDistance: 0.7,
   afkRounds: 3,
   baseRadius: 3,
+  finalRadius: 1.05,
   ringWidth: 1.15,
 });
 export const ANIMALS = ["fox", "rabbit", "penguin", "frog"];
@@ -80,6 +81,7 @@ export function createGame(players, config = {}) {
     })),
     rings,
     initialRings: rings,
+    duel: false,
     radius: radiusFor(rings),
     round: 1,
     phase: "position",
@@ -169,7 +171,9 @@ function nextRound(g) {
   g.phase = "position";
   g.remaining = Math.max(
     g.config.minTime,
-    g.config.roundTime - (g.initialRings - g.rings) * g.config.timeDrop,
+    g.duel
+      ? g.config.minTime
+      : g.config.roundTime - (g.initialRings - g.rings) * g.config.timeDrop,
   );
   g.shots = [];
   g.eliminated = [];
@@ -198,7 +202,10 @@ export function tick(g, dt) {
           p.move = 0;
         }
       }
-      p.s = wrap(p.s + (p.move * g.config.speed * dt) / (6 * g.radius));
+      // Keep the tiny final perimeter controllable: same angular pace as ring 1.
+      const speed =
+        g.config.speed * (g.duel ? g.radius / g.config.baseRadius : 1);
+      p.s = wrap(p.s + (p.move * speed * dt) / (6 * g.radius));
       const delta = Math.abs(p.s - p.startS);
       p.excursion = Math.max(
         p.excursion,
@@ -235,6 +242,19 @@ export function tick(g, dt) {
       g.clock = 0;
       return;
     }
+    if (
+      g.round % g.config.shrinkEvery === 0 &&
+      g.rings === 1 &&
+      !g.duel &&
+      survivors.length === 2
+    ) {
+      g.duel = true;
+      g.radius = g.config.finalRadius;
+      g.phase = "shrink";
+      g.remaining = g.config.shrinkTime;
+      g.clock = 0;
+      return;
+    }
     nextRound(g);
     return;
   }
@@ -249,6 +269,7 @@ export function view(g, id) {
     round: g.round,
     rings: g.rings,
     initialRings: g.initialRings,
+    duel: g.duel,
     radius: g.radius,
     clock: g.clock,
     winner: g.winner,

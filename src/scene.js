@@ -1,5 +1,6 @@
 import * as T from "three";
 import { animal } from "./animals.js";
+import { actorVisible } from "./presentation.js";
 import { perimeterPoint, radiusFor, PALETTE } from "../shared/game.js";
 export class ArenaScene {
   constructor(container, labels) {
@@ -8,8 +9,11 @@ export class ArenaScene {
     this.scene.background = new T.Color("#d8e5df");
     this.scene.fog = new T.Fog("#d8e5df", 36, 70);
     this.camera = new T.PerspectiveCamera(36, 1, 0.1, 100);
+    this.mobile = matchMedia("(pointer: coarse), (max-width: 760px)").matches;
     this.renderer = new T.WebGLRenderer({ antialias: true, alpha: false });
-    this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+    this.renderer.setPixelRatio(
+      Math.min(devicePixelRatio, this.mobile ? 1.25 : 1.75),
+    );
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = T.PCFSoftShadowMap;
     this.renderer.outputColorSpace = T.SRGBColorSpace;
@@ -21,7 +25,8 @@ export class ArenaScene {
     const sun = new T.DirectionalLight("#fff3d3", 4);
     sun.position.set(-8, 16, 9);
     sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
+    const shadowSize = this.mobile ? 1024 : 2048;
+    sun.shadow.mapSize.set(shadowSize, shadowSize);
     Object.assign(sun.shadow.camera, {
       left: -14,
       right: 14,
@@ -39,7 +44,10 @@ export class ArenaScene {
     this.displayRadius = this.targetRadius;
     this.buildArena(3);
     this.aimLine = new T.Line(
-      new T.BufferGeometry(),
+      new T.BufferGeometry().setAttribute(
+        "position",
+        new T.BufferAttribute(new Float32Array(6), 3),
+      ),
       new T.LineDashedMaterial({
         color: "#fff4cf",
         dashSize: 0.28,
@@ -49,6 +57,10 @@ export class ArenaScene {
       }),
     );
     this.aimLine.position.y = 0.68;
+    this.aimLine.geometry.setAttribute(
+      "lineDistance",
+      new T.BufferAttribute(new Float32Array(2), 1),
+    );
     this.scene.add(this.aimLine);
     this.shotGroup = new T.Group();
     this.scene.add(this.shotGroup);
@@ -105,20 +117,24 @@ export class ArenaScene {
         new T.LineBasicMaterial({ color: i === n ? "#ffedb8" : "#b9dbc4" }),
       );
       g.add(border);
+      const posts = new T.InstancedMesh(
+        new T.CylinderGeometry(0.095, 0.13, 0.34, 6),
+        new T.MeshStandardMaterial({ color: "#fff1ce" }),
+        6,
+      );
       for (let j = 0; j < 6; j++) {
-        const a = (j * Math.PI) / 3,
-          post = new T.Mesh(
-            new T.CylinderGeometry(0.095, 0.13, 0.34, 6),
-            new T.MeshStandardMaterial({ color: "#fff1ce" }),
-          );
-        post.position.set(
-          Math.cos(a) * r,
-          0.35 - (i - 1) * 0.075,
-          Math.sin(a) * r,
+        const a = (j * Math.PI) / 3;
+        posts.setMatrixAt(
+          j,
+          new T.Matrix4().makeTranslation(
+            Math.cos(a) * r,
+            0.35 - (i - 1) * 0.075,
+            Math.sin(a) * r,
+          ),
         );
-        post.castShadow = true;
-        g.add(post);
       }
+      posts.castShadow = true;
+      g.add(posts);
       this.world.add(g);
       this.rings.push(g);
     }
@@ -166,6 +182,7 @@ export class ArenaScene {
     base.rotation.y = Math.PI / 6;
     base.position.y = -0.9;
     base.castShadow = true;
+    this.base = base;
     this.scene.add(base);
   }
   aim(clientX, clientY, own) {
@@ -200,9 +217,13 @@ export class ArenaScene {
     for (let i = 0; i < this.rings.length; i++) {
       const index = n - i;
       const g = this.rings[i];
-      const shrinking = state?.phase === "shrink" && index === state.rings + 1;
+      const shrinking =
+        state?.phase === "shrink" && !state.duel && index === state.rings + 1;
       g.visible = index <= (state?.rings || 3) || shrinking;
-      const k = shrinking ? this.displayRadius / radiusFor(index) : 1;
+      const k =
+        shrinking || (state?.duel && index === 1)
+          ? this.displayRadius / radiusFor(index)
+          : 1;
       g.scale.set(k, 1, k);
       g.traverse((o) => {
         if (o.material) {
@@ -222,6 +243,8 @@ export class ArenaScene {
           Math.min(this.camera.aspect, 1.3)) *
           0.9,
       );
+    const baseScale = Math.min(1, radius / radiusFor(1));
+    this.base.scale.set(baseScale, 1, baseScale);
     this.scene.fog.near = dist + 12;
     this.scene.fog.far = dist + 55;
     this.camera.position.set(dist * 0.37, dist * 0.67, dist * 0.78);
@@ -287,7 +310,7 @@ export class ArenaScene {
         a = { model, label, s: p.s ?? 0 };
         this.actors.set(p.id, a);
       }
-      const visible = p.s !== undefined;
+      const visible = actorVisible(p, state);
       a.model.visible = visible;
       a.label.hidden = !visible || menu;
       if (!visible) continue;
@@ -332,12 +355,14 @@ export class ArenaScene {
           x: from.x + Math.cos(own.aim) * radius * 2.2,
           z: from.z + Math.sin(own.aim) * radius * 2.2,
         };
-      this.aimLine.geometry.dispose();
-      this.aimLine.geometry = new T.BufferGeometry().setFromPoints([
-        new T.Vector3(from.x, 0, from.z),
-        new T.Vector3(end.x, 0, end.z),
-      ]);
-      this.aimLine.computeLineDistances();
+      const positions = this.aimLine.geometry.attributes.position;
+      positions.setXYZ(0, from.x, 0, from.z);
+      positions.setXYZ(1, end.x, 0, end.z);
+      positions.needsUpdate = true;
+      this.aimLine.geometry.computeBoundingSphere();
+      const distances = this.aimLine.geometry.attributes.lineDistance;
+      distances.setX(1, Math.hypot(end.x - from.x, end.z - from.z));
+      distances.needsUpdate = true;
       this.aimLine.material.color.set(own.locked ? "#ffb76b" : "#fff4cf");
     }
     const signature = state?.shots?.length

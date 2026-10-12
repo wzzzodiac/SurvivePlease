@@ -6,7 +6,10 @@ const context = await browser.newContext({
   viewport: { width: 1440, height: 1000 },
 });
 const page = await context.newPage();
-page.on("pageerror", (e) => errors.push(e.message));
+page.on("pageerror", (e) => {
+  errors.push(e.message);
+  console.error("Browser error:", e.message);
+});
 await page.goto("http://localhost:5173");
 await page.waitForSelector("canvas");
 await page.waitForTimeout(1000);
@@ -26,11 +29,25 @@ await page.waitForFunction(
 );
 await page.waitForTimeout(750);
 await page.screenshot({ path: "qa/desktop-reveal.png" });
+const progress = setInterval(async () => {
+  try {
+    console.log(
+      await page.evaluate(() => ({
+        phase: document.querySelector("#phase-label")?.textContent,
+        round: document.querySelector(".round strong")?.textContent,
+        timer: document.querySelector("#timer")?.textContent,
+        alive: document.querySelector("#alive")?.textContent,
+        hidden: document.hidden,
+      })),
+    );
+  } catch {}
+}, 15000);
 await page.waitForFunction(
   () => !!document.querySelector(".end-card"),
   {},
   { timeout: 160000 },
 );
+clearInterval(progress);
 await page.screenshot({ path: "qa/desktop-results.png" });
 const result = await page.locator(".end-card").innerText();
 const mobile = await browser.newContext({
@@ -54,7 +71,7 @@ await mp.mouse.down();
 await mp.waitForTimeout(800);
 await mp.mouse.up();
 await mp.locator("canvas").tap({ position: { x: 100, y: 400 } });
-await mp.getByRole("button", { name: "FIJAR DISPARO" }).tap();
+await mp.getByRole("button", { name: "DISPARAR" }).tap();
 await mp.waitForFunction(
   () => document.querySelector("#phase-label")?.textContent === "LA REVELACIÓN",
   {},

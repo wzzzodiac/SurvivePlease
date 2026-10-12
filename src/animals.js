@@ -1,4 +1,5 @@
 import * as T from "three";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 const mat = (color) =>
   new T.MeshStandardMaterial({ color, roughness: 0.78, flatShading: true });
 export function animal(kind, color) {
@@ -119,5 +120,25 @@ export function animal(kind, color) {
     Math.PI / 2,
   );
   root.userData.body = body;
+  // These pieces animate together. Bake their local transforms and batch by
+  // material so a character needs ~5 draw calls instead of ~20.
+  body.updateMatrixWorld(true);
+  const batches = new Map();
+  for (const mesh of [...body.children]) {
+    const geometries = batches.get(mesh.material) || [];
+    geometries.push(mesh.geometry.clone().applyMatrix4(mesh.matrix));
+    batches.set(mesh.material, geometries);
+    body.remove(mesh);
+    mesh.geometry.dispose();
+  }
+  for (const [material, geometries] of batches) {
+    const geometry = mergeGeometries(geometries);
+    if (!geometry) throw Error("No se pudo preparar el modelo animal");
+    const mesh = new T.Mesh(geometry, material);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    body.add(mesh);
+    geometries.forEach((g) => g.dispose());
+  }
   return root;
 }

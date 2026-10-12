@@ -94,6 +94,8 @@ test("shrinking every third round preserves perimeter coordinates and reduces ti
 test("minimum arena and timer stay bounded", () => {
   const g = duel();
   g.rings = 1;
+  g.duel = true;
+  g.radius = CONFIG.finalRadius;
   g.initialRings = 7;
   g.round = 24;
   g.phase = "results";
@@ -102,6 +104,55 @@ test("minimum arena and timer stay bounded", () => {
   assert.equal(g.rings, 1);
   assert.equal(g.remaining, 7);
   assert.equal(g.phase, "position");
+});
+
+test("the last two survivors shrink to the core once, preserving their angle", () => {
+  const g = duel();
+  g.rings = 1;
+  g.radius = CONFIG.baseRadius;
+  g.round = 9;
+  g.phase = "results";
+  g.remaining = 0;
+  const before = g.players.map((p) => p.s);
+  tick(g, 0.01);
+  assert.equal(g.duel, true);
+  assert.equal(g.phase, "shrink");
+  assert.equal(g.radius, CONFIG.finalRadius);
+  assert.ok(g.radius < CONFIG.baseRadius / 2);
+  assert.deepEqual(
+    g.players.map((p) => p.s),
+    before,
+  );
+  advance(g, 1.6);
+  assert.equal(g.phase, "position");
+  assert.ok(g.remaining <= CONFIG.minTime);
+  input(g, "a", { move: 1 });
+  tick(g, 0.1);
+  assert.ok(
+    Math.abs(g.players[0].s - (CONFIG.speed * 0.1) / (6 * CONFIG.baseRadius)) <
+      1e-8,
+  );
+  assert.equal(view(g, "a").duel, true);
+});
+
+test("the core is reserved for two survivors and respects the contraction cadence", () => {
+  for (const [count, round] of [
+    [3, 9],
+    [2, 8],
+  ]) {
+    const g = createGame(
+      Array.from({ length: count }, (_, i) => player(String(i), "P")),
+    );
+    g.rings = 1;
+    g.radius = CONFIG.baseRadius;
+    g.round = round;
+    g.phase = "results";
+    g.remaining = 0;
+    tick(g, 0.01);
+    assert.equal(g.duel, false);
+    assert.equal(g.radius, CONFIG.baseRadius);
+    assert.equal(g.phase, "position");
+  }
 });
 test("AFK warns twice, eliminates at three; tiny oscillations do not count", () => {
   const g = duel();

@@ -31,7 +31,7 @@ Desde otro dispositivo de la red, utiliza la IP del equipo en ambos enlaces, por
 | --- | --- | --- |
 | Recorrer el perímetro | A / D, o flechas | Mantener ← / → |
 | Apuntar | Ratón sobre la arena | Tocar o arrastrar sobre la arena |
-| Fijar posición y disparo | Botón, espacio, Enter o clic en la arena | Botón **FIJAR DISPARO** |
+| Fijar posición y disparo | Botón, espacio, Enter o clic en la arena | Botón **DISPARAR** |
 
 Al fijar, quedas bloqueado hasta la siguiente ronda. El disparo sale con todos los demás. Si no confirmas, se registra el ángulo actual al vencer el tiempo: no pierdes por olvidar el botón.
 
@@ -40,10 +40,10 @@ Al fijar, quedas bloqueado hasta la siguiente ronda. El disparo sale con todos l
 - 2–8 jugadores por sala; hasta 5 salas por proceso. Práctica con tres bots que se mueven, apuntan, confirman, eliminan y mueren.
 - Movimiento continuo por los seis bordes, incluyendo esquinas. Sin entrada al interior.
 - Posicionamiento oculto de hasta 20 segundos. Termina antes si todos los vivos confirman.
-- Revelación de personajes y nombres, pausa visual breve, disparos simultáneos, impactos, resultados y siguiente ronda.
+- Revelación de personajes y nombres, pausa visual breve, disparos simultáneos, impactos, resultados y siguiente ronda. Los eliminados se ven caer únicamente en su propia resolución; después desaparecen y no vuelven a caer en revelaciones posteriores.
 - Rayos contra el primer círculo válido de radio 0,48 m. Una sola instantánea para todos: también dispara quien muere en esa resolución. Hay eliminaciones mutuas y empate si no sobrevive nadie.
 - 3 anillos para 2–4 participantes, 5 para 5–6, 7 para 7–8. Contracción cada tres rondas, manteniendo la coordenada proporcional del perímetro y su ángulo. Advertencia previa y transición animada.
-- Cada contracción resta 3 segundos; mínimo 7 segundos y un anillo. El duelo continúa en el mínimo.
+- Cada contracción resta 3 segundos; mínimo 7 segundos. Tras alcanzar un anillo y quedar dos supervivientes, la siguiente contracción periódica lleva al **núcleo final** (radio 1,05 m frente a los 3 m del último anillo normal). El núcleo mantiene rondas de 7 segundos y no vuelve a encogerse; se reduce la velocidad lineal para conservar el control angular.
 - Anti-AFK: máxima excursión real desde el punto inicial de la ronda, sobre el perímetro. Menos de 0,7 m incrementa el contador; dos rondas avisan, tres eliminan. Pulsaciones o vibraciones de milímetros no cuentan. Movimiento suficiente reinicia el contador.
 - Zorro, conejo, pingüino y rana, con animaciones sencillas, sombras, nombres y sonido sintetizado de revelación.
 - Menú, selección de personaje, lobby, HUD adaptable y resultados.
@@ -80,13 +80,34 @@ npm run build
 # Con frontend/backend arrancados y Microsoft Edge instalado:
 node qa/browser.mjs
 node qa/multiplayer.mjs
+node qa/fixes.mjs
+node qa/profile.mjs after
 ```
 
-14 pruebas: confirmación anticipada, timeout, eliminaciones simultáneas, primer impacto, movimiento, contracción, mínimo, AFK, privacidad, validación y límites de salas. La prueba de navegador juega una práctica completa hasta el resultado y captura escritorio (1440×1000) y móvil emulado (390×844). La prueba online usa dos contextos de Edge independientes y conexiones WebSocket reales: lobby, movimiento, resolución anticipada, paquetes privados, rayos idénticos, desconexión y rechazo de origen no autorizado.
+18 pruebas: muertes visibles una sola vez, núcleo final y límites, confirmación anticipada, timeout, eliminaciones simultáneas, primer impacto, movimiento, contracción, mínimo, AFK, privacidad, validación y límites de salas. La prueba de navegador juega una práctica completa hasta el resultado y captura escritorio (1440×1000) y móvil emulado (390×844). La prueba online usa dos contextos de Edge independientes y conexiones WebSocket reales: lobby, movimiento, resolución anticipada, paquetes privados, rayos idénticos, desconexión y rechazo de origen no autorizado.
 
 Resultados: [navegador](qa/browser-results.json), [multijugador](qa/multiplayer-results.json). Capturas: [fase oculta](qa/desktop-hidden.png), [revelación](qa/desktop-reveal.png), [resultado](qa/desktop-results.png), [móvil](qa/mobile-hidden.png), [lobby online](qa/multiplayer-lobby.png).
 
-**Límites:** Edge headless en Windows y emulación táctil; sin pruebas en móvil físico, Safari/Firefox, rendimiento térmico, cinco salas/40 jugadores simultáneos ni red pública. Vite avisa de un bundle ligeramente mayor de 500 kB sin comprimir (aprox. 133 kB gzip), incluido Three.js.
+**Límites:** Edge headless en Windows y emulación táctil; sin pruebas en móvil físico, Safari/Firefox, rendimiento térmico, cinco salas/40 jugadores simultáneos ni red pública. Vite avisa de un bundle ligeramente mayor de 500 kB sin comprimir (aprox. 136 kB gzip), incluido Three.js.
+
+## Revisión móvil
+
+Se conservan tres botones inferiores: **←**, **→** y **DISPARAR**, con el mismo diseño. El apuntado sigue siendo táctil sobre la arena. Los botones miden al menos 57×60 píxeles CSS; probados en vertical (390×844) y horizontal (844×390). Una segunda pulsación para apuntar no interrumpe el dedo que mantiene el movimiento. Advertencias y ayudas quedan fuera de la fila de controles.
+
+Perfil móvil automático para puntero táctil o pantalla estrecha: DPR máximo 1,25 (escritorio 1,75), sombras suaves de 1024² (escritorio 2048²), render limitado a 60 cuadros/s y HUD actualizado a 10 Hz. Se agrupan piezas estáticas por material e instancian los postes de cada anillo. La guía de apuntado reutiliza sus buffers en vez de destruir y crear geometría cada cuadro.
+
+Medición reproducible en [antes](qa/performance-before.json) y [después](qa/performance-after.json), ocho animales y siete anillos, misma escena de revelación sin rayos:
+
+| Render móvil emulado DPR 3 | Antes | Después |
+| --- | --- | --- |
+| Llamadas de dibujo del render principal (`renderer.info`) | 238 | 77 |
+| Triángulos | 25 958 | 25 958 |
+| Resolución del canvas | 682×1477 | 487×1055 |
+| JS de producción gzip | 132,9 kB | 135,5 kB |
+
+Se reduce un 68 % el número de llamadas de dibujo y un 49 % los píxeles del canvas, manteniendo la geometría y la dirección visual. El tamaño de JS sube unos 2,6 kB gzip por la agrupación de geometrías y las correcciones; no hay texturas ni modelos 3D que descargar. CSS añade unos 4 kB gzip y las fuentes web son opcionales. Estas cifras son del render principal y **no incluyen un desglose GPU de las pasadas de sombra**. Los tiempos de cuadros del host emulado no prueban FPS, batería ni temperatura en teléfonos físicos.
+
+Pruebas específicas y capturas: [resultado](qa/fixes-results.json), [controles](qa/mobile-controls-v2.png), [horizontal](qa/mobile-landscape-v2.png), [núcleo](qa/final-duel-desktop.png). Se han comprobado con eventos táctiles emulados múltiples, sin errores de JavaScript.
 
 ## Desplegar frontend
 
