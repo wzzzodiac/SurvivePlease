@@ -15,15 +15,15 @@ await page.waitForSelector("canvas");
 await page.waitForTimeout(1000);
 await page.screenshot({ path: "qa/desktop-menu.png" });
 await page.locator("#player-name").fill("Cauce");
-await page.getByRole("button", { name: "Jugar práctica" }).click();
+await page.getByRole("button", { name: "Play practice" }).click();
 await page.waitForTimeout(1000);
 await page.screenshot({ path: "qa/desktop-hidden.png" });
 await page.keyboard.down("d");
 await page.waitForTimeout(900);
 await page.keyboard.up("d");
-await page.getByRole("button", { name: "FIJAR DISPARO" }).click();
+await page.getByRole("button", { name: "LOCK SHOT" }).click();
 await page.waitForFunction(
-  () => document.querySelector("#phase-label")?.textContent === "LA REVELACIÓN",
+  () => document.querySelector("#phase-label")?.textContent === "THE REVEAL",
   {},
   { timeout: 12000 },
 );
@@ -61,19 +61,19 @@ mp.on("pageerror", (e) => errors.push(e.message));
 await mp.goto("http://localhost:5173");
 await mp.waitForTimeout(800);
 await mp.screenshot({ path: "qa/mobile-menu.png" });
-await mp.getByRole("button", { name: "Jugar práctica" }).tap();
+await mp.getByRole("button", { name: "Play practice" }).tap();
 await mp.waitForTimeout(500);
 await mp.screenshot({ path: "qa/mobile-hidden.png" });
-const move = mp.getByRole("button", { name: "Mover a la derecha" });
+const move = mp.getByRole("button", { name: "Move right" });
 const box = await move.boundingBox();
 await mp.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
 await mp.mouse.down();
 await mp.waitForTimeout(800);
 await mp.mouse.up();
 await mp.locator("canvas").tap({ position: { x: 100, y: 400 } });
-await mp.getByRole("button", { name: "DISPARAR" }).tap();
+await mp.getByRole("button", { name: "FIRE" }).tap();
 await mp.waitForFunction(
-  () => document.querySelector("#phase-label")?.textContent === "LA REVELACIÓN",
+  () => document.querySelector("#phase-label")?.textContent === "THE REVEAL",
   {},
   { timeout: 12000 },
 );

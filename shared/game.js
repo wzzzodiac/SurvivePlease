@@ -61,7 +61,7 @@ export function player(id, name, animal = "fox", bot = false) {
 }
 export function createGame(players, config = {}) {
   if (players.length < 2 || players.length > 8)
-    throw Error("Se necesitan de 2 a 8 jugadores");
+    throw Error("A match needs 2 to 8 players");
   const rings = players.length <= 4 ? 3 : players.length <= 6 ? 5 : 7;
   const g = {
     config: { ...CONFIG, ...config },
@@ -121,6 +121,9 @@ export function rayHit(origin, angle, target, radius = CONFIG.hitRadius) {
     uz = Math.sin(angle),
     t = dx * ux + dz * uz,
     d2 = dx * dx + dz * dz - t * t;
+  // A ray starting inside another player's hitbox hits immediately, even
+  // when their center is behind or perpendicular to the firing direction.
+  if (dx * dx + dz * dz <= radius * radius) return 0;
   if (t <= 0 || d2 > radius * radius) return null;
   return Math.max(0, t - Math.sqrt(Math.max(0, radius * radius - d2)));
 }

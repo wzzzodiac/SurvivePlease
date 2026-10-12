@@ -13,7 +13,7 @@ export class Rooms {
   }
   create(id, name, animal) {
     if (this.rooms.size >= CONFIG.maxRooms)
-      throw Error("Las cinco salas están ocupadas");
+      throw Error("All five rooms are occupied");
     let code;
     do {
       code = randomBytes(3).toString("hex").toUpperCase();
@@ -25,10 +25,10 @@ export class Rooms {
   }
   join(code, id, name, animal) {
     const r = this.rooms.get(code);
-    if (!r) throw Error("No existe esa sala");
-    if (r.game) throw Error("La partida ya comenzó");
-    if (r.players.length >= CONFIG.maxPlayers) throw Error("Sala llena");
-    if (r.players.some((p) => p.id === id)) throw Error("Ya estás dentro");
+    if (!r) throw Error("Room not found");
+    if (r.game) throw Error("The match has already started");
+    if (r.players.length >= CONFIG.maxPlayers) throw Error("Room full");
+    if (r.players.some((p) => p.id === id)) throw Error("You have already joined");
     r.players.push(
       player(
         id,
@@ -46,10 +46,10 @@ export class Rooms {
     if (p) p.ready = !p.ready;
   }
   start(r, id) {
-    if (r.game) throw Error("La partida ya comenzó");
-    if (r.host !== id) throw Error("Solo el anfitrión puede iniciar");
+    if (r.game) throw Error("The match has already started");
+    if (r.host !== id) throw Error("Only the host can start");
     if (r.players.length < 2 || !r.players.every((p) => p.ready))
-      throw Error("Hacen falta dos jugadores y todos listos");
+      throw Error("At least two players must join and everyone must be ready");
     r.game = createGame(r.players);
   }
   leave(r, id) {

@@ -133,7 +133,7 @@ export function animal(kind, color) {
   }
   for (const [material, geometries] of batches) {
     const geometry = mergeGeometries(geometries);
-    if (!geometry) throw Error("No se pudo preparar el modelo animal");
+    if (!geometry) throw Error("Could not prepare the animal model");
     const mesh = new T.Mesh(geometry, material);
     mesh.castShadow = true;
     mesh.receiveShadow = true;

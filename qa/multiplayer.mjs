@@ -24,19 +24,19 @@ try {
     );
     await p.goto("http://localhost:5173");
     await p.locator("#player-name").fill(i ? "Atlas" : "Cauce");
-    await p.getByRole("button", { name: "Jugar con amigos" }).click();
+    await p.getByRole("button", { name: "Play with friends" }).click();
   }
-  await pages[0].getByRole("button", { name: "Crear sala" }).click();
+  await pages[0].getByRole("button", { name: "Create room" }).click();
   await pages[0].waitForSelector(".code");
   const code = (await pages[0].locator(".code").innerText()).split(/\s/)[0];
   await pages[1].locator("#room-code").fill(code);
-  await pages[1].getByRole("button", { name: "Unirme" }).click();
+  await pages[1].getByRole("button", { name: "Join" }).click();
   await pages[1].waitForSelector(".code");
   await pages[0].screenshot({ path: "qa/multiplayer-lobby.png" });
   for (const p of pages)
-    await p.getByRole("button", { name: "Estoy listo" }).click();
+    await p.getByRole("button", { name: "Ready" }).click();
   await pages[0].waitForTimeout(200);
-  await pages[0].getByRole("button", { name: "Iniciar partida" }).click();
+  await pages[0].getByRole("button", { name: "Start match" }).click();
   for (const p of pages) await p.waitForSelector("#shoot");
   await pages[0].keyboard.down("d");
   await pages[1].keyboard.down("a");
@@ -58,12 +58,12 @@ try {
   }
   const t = Date.now();
   await Promise.all(
-    pages.map((p) => p.getByRole("button", { name: "FIJAR DISPARO" }).click()),
+    pages.map((p) => p.getByRole("button", { name: "LOCK SHOT" }).click()),
   );
   for (const p of pages)
     await p.waitForFunction(
       () =>
-        document.querySelector("#phase-label")?.textContent === "LA REVELACIÓN",
+        document.querySelector("#phase-label")?.textContent === "THE REVEAL",
       {},
       { timeout: 4000 },
     );

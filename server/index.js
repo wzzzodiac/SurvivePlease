@@ -77,7 +77,7 @@ wss.on("connection", (ws, req) => {
       const m = JSON.parse(raw.toString());
       if (!m || typeof m !== "object") return;
       if (m.type === "create" || m.type === "join") {
-        if (c.room) throw Error("Sal de tu sala antes");
+        if (c.room) throw Error("Leave your current room first");
         if (m.type === "create") {
           let b = buckets.get(c.ip);
           if (!b || now - b.time > 60000) {
@@ -85,7 +85,7 @@ wss.on("connection", (ws, req) => {
             buckets.set(c.ip, b);
           }
           if (now - c.lastCreate < 10000 || ++b.creates > 5)
-            throw Error("Espera antes de crear otra sala");
+            throw Error("Wait before creating another room");
           c.lastCreate = now;
           c.room = rooms.create(id, m.name, m.animal);
         } else
