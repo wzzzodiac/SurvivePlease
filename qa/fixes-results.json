@@ -8,10 +8,10 @@
     "coreScale": 0.3506233474479879
   },
   "pointBlank": {
-    "eliminated": 2,
+    "eliminated": 0,
     "hits": [
-      "p1",
-      "p0"
+      null,
+      null
     ],
     "finiteTransforms": true
   },
@@ -56,7 +56,8 @@
     }
   ],
   "multiTouchMovementPreserved": true,
-  "mainFrameRate": 60.56975505848284,
+  "touchAimIndependentOfMovement": true,
+  "mainFrameRate": 60.58588548601864,
   "errors": [],
   "note": "Windows Edge headless. Mobile touch/DPR/rotation emulated, not physical device."
 }

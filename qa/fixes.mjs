@@ -101,8 +101,8 @@ try {
       finiteTransforms: qaScene.shotGroup.children.every((o) => o.matrixWorld.elements.every(Number.isFinite)),
     };
   });
-  assert.equal(pointBlank.eliminated, 2);
-  assert.deepEqual(pointBlank.hits, ["p1", "p0"]);
+  assert.equal(pointBlank.eliminated, 0);
+  assert.deepEqual(pointBlank.hits, [null, null]);
   assert.ok(pointBlank.finiteTransforms);
   await page.screenshot({ path: "qa/point-blank.png" });
   const mobile = await browser.newContext({
@@ -136,6 +136,28 @@ try {
   }
   const portrait = await dockCheck();
   await mp.screenshot({ path: "qa/mobile-controls-v2.png" });
+  // Capture the live player state to prove touch aiming works without moving.
+  await mp.evaluate(async () => {
+    const moduleUrl = performance.getEntriesByType("resource")
+      .find((e) => new URL(e.name).pathname === "/src/scene.js").name;
+    const { ArenaScene } = await import(moduleUrl);
+    const original = ArenaScene.prototype.draw;
+    window.restoreAimProbe = () => { ArenaScene.prototype.draw = original; };
+    ArenaScene.prototype.draw = function (state, you, ...args) {
+      const p = state?.players.find((p) => p.id === you);
+      window.aimProbe = p && { s: p.s, aim: p.aim };
+      return original.call(this, state, you, ...args);
+    };
+  });
+  await mp.locator("canvas").tap({ position: { x: 80, y: 350 } });
+  await mp.waitForTimeout(150);
+  const firstAim = await mp.evaluate(() => aimProbe);
+  await mp.locator("canvas").tap({ position: { x: 310, y: 500 } });
+  await mp.waitForTimeout(150);
+  const secondAim = await mp.evaluate(() => aimProbe);
+  assert.equal(firstAim.s, secondAim.s);
+  assert.ok(Math.abs(firstAim.aim - secondAim.aim) > 0.1);
+  await mp.evaluate(() => restoreAimProbe());
   // Chromium CDP generates real touch pointers: keep walking while a second
   // finger taps the arena, then release only the aiming finger.
   const cdp = await mobile.newCDPSession(mp),
@@ -213,6 +235,7 @@ try {
         portrait,
         landscape,
         multiTouchMovementPreserved: true,
+        touchAimIndependentOfMovement: true,
         mainFrameRate,
         errors,
         note: "Windows Edge headless. Mobile touch/DPR/rotation emulated, not physical device.",

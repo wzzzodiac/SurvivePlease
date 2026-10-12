@@ -29,6 +29,9 @@ export const PALETTE = [
   "#eee3d1",
 ];
 export const wrap = (s) => ((s % 1) + 1) % 1;
+// Each corner owns the adjacent half-edges; boundaries belong clockwise.
+export const cornerFor = (s) =>
+  Math.floor(wrap(s) * 6 + 0.5 + Number.EPSILON * 8) % 6;
 export const radiusFor = (rings) =>
   CONFIG.baseRadius + (rings - 1) * CONFIG.ringWidth;
 export function perimeterPoint(s, radius) {
@@ -140,11 +143,15 @@ export function resolve(g) {
     let best = null,
       dist = g.radius * 2.5;
     for (const q of alive) {
-      if (q.id === p.id) continue;
+      if (q.id === p.id || cornerFor(q.s) === cornerFor(p.s)) continue;
+      const target = perimeterPoint(q.s, g.radius);
+      // No contact kills, including close players across a corner-zone boundary.
+      if (Math.hypot(target.x - from.x, target.z - from.z) <= g.config.hitRadius)
+        continue;
       const hit = rayHit(
         from,
         p.aim,
-        perimeterPoint(q.s, g.radius),
+        target,
         g.config.hitRadius,
       );
       if (hit !== null && hit < dist) {
