@@ -1,0 +1,82 @@
+{
+  "label": "before",
+  "environment": "Edge headless on Windows; touch/viewport/DPR emulation. Frame timings are host measurements, not phone GPU, battery or thermal evidence.",
+  "samples": [
+    {
+      "profile": "desktop",
+      "phase": "position",
+      "frames": 119,
+      "frameMedianMs": 8.300000000000068,
+      "frameP95Ms": 8.400000000000091,
+      "drawCalls": 96,
+      "triangles": 4334,
+      "geometries": 96,
+      "textures": 1,
+      "renderWidth": 1440,
+      "renderHeight": 1000,
+      "pixelRatio": 1,
+      "shadowMap": true,
+      "renderer": "WebKit WebGL"
+    },
+    {
+      "profile": "desktop",
+      "phase": "reveal",
+      "frames": 119,
+      "frameMedianMs": 8.300000000000182,
+      "frameP95Ms": 8.400000000000091,
+      "drawCalls": 241,
+      "triangles": 26018,
+      "geometries": 242,
+      "textures": 1,
+      "renderWidth": 1440,
+      "renderHeight": 1000,
+      "pixelRatio": 1,
+      "shadowMap": true,
+      "renderer": "WebKit WebGL"
+    },
+    {
+      "profile": "mobile-emulated-DPR3",
+      "phase": "position",
+      "frames": 119,
+      "frameMedianMs": 8.300000000000068,
+      "frameP95Ms": 8.5,
+      "drawCalls": 93,
+      "triangles": 4274,
+      "geometries": 93,
+      "textures": 1,
+      "renderWidth": 682,
+      "renderHeight": 1477,
+      "pixelRatio": 1.75,
+      "shadowMap": true,
+      "renderer": "WebKit WebGL"
+    },
+    {
+      "profile": "mobile-emulated-DPR3",
+      "phase": "reveal",
+      "frames": 119,
+      "frameMedianMs": 8.300000000000182,
+      "frameP95Ms": 8.5,
+      "drawCalls": 238,
+      "triangles": 25958,
+      "geometries": 239,
+      "textures": 1,
+      "renderWidth": 682,
+      "renderHeight": 1477,
+      "pixelRatio": 1.75,
+      "shadowMap": true,
+      "renderer": "WebKit WebGL"
+    }
+  ],
+  "bundle": [
+    {
+      "file": "index-DPuFGvGQ.js",
+      "bytes": 510760,
+      "gzipBytes": 132909
+    },
+    {
+      "file": "index-_GjZnuEV.css",
+      "bytes": 12808,
+      "gzipBytes": 3694
+    }
+  ]
+}

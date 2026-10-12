@@ -45,6 +45,9 @@ let route = "home",
   lastPhase = "",
   netSend = 0,
   held = 0,
+  movePointer = null,
+  lastDraw = 0,
+  lastHUD = 0,
   pointerAim = null,
   lastNow = performance.now();
 const names = {
@@ -130,18 +133,30 @@ function updateHUD() {
   $("#hint").textContent =
     phase === "position"
       ? p?.alive
-        ? "Tus rivales están ocultos. Predice su próximo movimiento."
+        ? scene.mobile
+          ? "← → para moverte. Toca la arena para apuntar."
+          : "Tus rivales están ocultos. Predice su próximo movimiento."
         : "Has sido eliminado. La siguiente revelación mostrará el duelo."
       : "Todas las posiciones, al descubierto.";
   $("#shrink-notice").textContent =
-    g.round % 3 === 0 && g.rings > 1
-      ? "↓ Contracción al terminar esta ronda"
+    g.round % 3 === 0 && (g.rings > 1 || (!g.duel && alive === 2))
+      ? g.rings === 1
+        ? "↓ Duelo en el núcleo al terminar esta ronda"
+        : "↓ Contracción al terminar esta ronda"
       : "";
+  $(".ring-count span").textContent = g.duel ? "NÚCLEO" : "ANILLOS";
+  $(".ring-count b").textContent = g.duel
+    ? "DUELO"
+    : g.rings + "/" + g.initialRings;
   const shoot = $("#shoot");
   shoot.disabled = phase !== "position" || !p?.alive || p.locked;
   const shootLabel = p?.locked
-    ? "DISPARO FIJADO <span>✓</span>"
-    : "FIJAR DISPARO <span>↗</span>";
+    ? scene.mobile
+      ? "FIJADO <span>✓</span>"
+      : "DISPARO FIJADO <span>✓</span>"
+    : scene.mobile
+      ? "DISPARAR <span>↗</span>"
+      : "FIJAR DISPARO <span>↗</span>";
   if (shoot.innerHTML !== shootLabel) shoot.innerHTML = shootLabel;
   $("#shot-status").textContent =
     phase === "position"
@@ -177,7 +192,7 @@ function updateHUD() {
   if (phase === "finished" && !$("#result-overlay").firstElementChild) {
     const win = g.players.find((p) => p.id === g.winner);
     $("#result-overlay").innerHTML =
-      `<section class="end-card"><div class="eyebrow">${g.draw ? "NADIE SE LO ESPERABA" : "ÚLTIMO ANIMAL EN PIE"}</div><h1>${g.draw ? "¡Empate!" : escape(win?.name || "Ganador") + " sobrevive."}</h1><p>${g.draw ? "Todos cayeron en la misma resolución." : "Un buen ángulo lo cambia todo."}</p><p class="micro">${g.round} rondas · ${g.initialRings - g.rings} contracciones</p><button class="primary" data-action="${local ? "practice" : "home"}">${local ? "Otra partida ↗" : "Volver al menú ↗"}</button></section>`;
+      `<section class="end-card"><div class="eyebrow">${g.draw ? "NADIE SE LO ESPERABA" : "ÚLTIMO ANIMAL EN PIE"}</div><h1>${g.draw ? "¡Empate!" : escape(win?.name || "Ganador") + " sobrevive."}</h1><p>${g.draw ? "Todos cayeron en la misma resolución." : "Un buen ángulo lo cambia todo."}</p><p class="micro">${g.round} rondas · ${g.initialRings - g.rings + (g.duel ? 1 : 0)} contracciones</p><button class="primary" data-action="${local ? "practice" : "home"}">${local ? "Otra partida ↗" : "Volver al menú ↗"}</button></section>`;
   } else if (phase !== "finished") $("#result-overlay").innerHTML = "";
   if (phase !== lastPhase) {
     lastPhase = phase;
@@ -339,12 +354,13 @@ document.addEventListener("keydown", (e) => {
   if (key === " " || key === "enter") act({ lock: true });
 });
 document.addEventListener("keyup", (e) => {
-  if (["a", "d", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+  if (["a", "d", "arrowleft", "arrowright"].includes(e.key.toLowerCase())) {
     held = 0;
     act({ move: 0 });
   }
 });
 function stop() {
+  movePointer = null;
   held = 0;
   act({ move: 0 });
 }
@@ -355,13 +371,18 @@ document.addEventListener("visibilitychange", () => {
 document.addEventListener("pointerdown", (e) => {
   const button = e.target.closest("[data-hold]");
   if (button) {
+    movePointer = e.pointerId;
     held = Number(button.dataset.hold);
     button.setPointerCapture(e.pointerId);
     act({ move: held });
   }
 });
-document.addEventListener("pointerup", stop);
-document.addEventListener("pointercancel", stop);
+function releaseMove(e) {
+  if (e.pointerId === movePointer) stop();
+}
+document.addEventListener("pointerup", releaseMove);
+document.addEventListener("pointercancel", releaseMove);
+document.addEventListener("lostpointercapture", releaseMove);
 function aim(e) {
   if (route !== "play") return;
   const p = state?.players.find((p) => p.id === you),
@@ -377,6 +398,9 @@ scene.canvas.addEventListener("pointerdown", (e) => {
   if (e.pointerType === "mouse") act({ aim: pointerAim, lock: true });
 });
 function loop(now) {
+  requestAnimationFrame(loop);
+  if (document.hidden || now - lastDraw < 1000 / 60 - 0.5) return;
+  lastDraw = now;
   const dt = Math.min((now - lastNow) / 1000, 0.1);
   lastNow = now;
   if (local) {
@@ -391,9 +415,11 @@ function loop(now) {
     act({ move: held, ...(pointerAim !== null ? { aim: pointerAim } : {}) });
   }
   render();
-  updateHUD();
+  if (now - lastHUD >= 100 || state?.phase !== lastPhase) {
+    updateHUD();
+    lastHUD = now;
+  }
   scene.draw(state, you, now / 1000, dt, route !== "play");
-  requestAnimationFrame(loop);
 }
 render();
 requestAnimationFrame(loop);

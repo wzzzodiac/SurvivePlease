@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>SurvivePlease · Render QA</title>
+  <style>
+    body {
+      margin: 0;
+    }
+    #stage,
+    #labels {
+      position: fixed;
+      inset: 0;
+    }
+    #labels {
+      pointer-events: none;
+    }
+    .nameplate {
+      position: absolute;
+      font: 12px sans-serif;
+      background: #fff9ea;
+      padding: 4px;
+      border-radius: 6px;
+      transform: translate(-50%, -100%);
+    }
+    [hidden] {
+      display: none;
+    }
+  </style>
+  <div id="stage"></div>
+  <div id="labels"></div>
+  <script type="module">
+    import { ArenaScene } from "/src/scene.js";
+    import { createGame, player, view, ANIMALS } from "/shared/game.js";
+    window.qaScene = new ArenaScene(
+      document.querySelector("#stage"),
+      document.querySelector("#labels"),
+    );
+    window.qaGame = createGame(
+      Array.from({ length: 8 }, (_, i) =>
+        player("p" + i, "Animal " + i, ANIMALS[i % 4]),
+      ),
+    );
+    window.qaView = view(window.qaGame, "p0");
+    window.qaDraw = (time, dt = 1 / 60) => qaScene.draw(qaView, "p0", time, dt);
+  </script>
+</html>

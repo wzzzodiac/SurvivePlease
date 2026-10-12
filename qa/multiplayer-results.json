@@ -3,7 +3,7 @@
   "separateContexts": true,
   "hiddenPacketsPrivate": true,
   "simultaneousShotsIdentical": true,
-  "earlyResolutionMs": 141,
+  "earlyResolutionMs": 150,
   "disconnectHandled": true,
   "untrustedOriginRejected": true,
   "errors": []

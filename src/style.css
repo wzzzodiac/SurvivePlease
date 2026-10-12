@@ -1018,3 +1018,100 @@ footer small {
     max-height: 58%;
   }
 }
+
+/* Keep the same three-button dock on phones and touch tablets. */
+@media (max-width: 760px), (pointer: coarse) {
+  .playing .bottom-hud {
+    left: 18px;
+    right: 18px;
+    bottom: max(20px, env(safe-area-inset-bottom));
+    gap: 12px;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+  .playing .touch-move {
+    display: flex;
+    gap: 8px;
+  }
+  .playing .touch-move button {
+    width: 57px;
+    height: 60px;
+    border-radius: 13px;
+    background: #f9f5e5d9;
+    color: var(--ink);
+    border: 1px solid #718f8050;
+    box-shadow: 0 3px 0 #718f8050;
+    font-size: 25px;
+    touch-action: none;
+    user-select: none;
+  }
+  .playing .shoot-area {
+    flex: 1;
+    max-width: 320px;
+    margin-left: auto;
+    width: auto;
+  }
+  .playing #shoot {
+    height: 60px;
+    touch-action: manipulation;
+    user-select: none;
+  }
+  .playing .touch-help,
+  .playing .control-help,
+  .playing .ring-count,
+  .playing #shot-status {
+    display: none;
+  }
+  .playing #afk {
+    position: fixed;
+    top: 211px;
+    bottom: auto;
+    left: 18px;
+    right: 18px;
+    max-width: none;
+    text-align: center;
+    font-size: 10px;
+  }
+}
+@media (pointer: coarse) and (orientation: landscape) and (max-height: 520px) {
+  .playing header {
+    padding: 10px 18px;
+  }
+  .playing .mode-tag {
+    display: none;
+  }
+  .playing .match-top {
+    top: 14px;
+    gap: 16px;
+  }
+  .playing .phase > strong {
+    font-size: 30px;
+  }
+  .playing .round strong {
+    font-size: 23px;
+  }
+  .playing .match-note {
+    top: 82px;
+    left: 18px;
+    width: 170px;
+  }
+  .playing .match-note > .eyebrow {
+    display: none;
+  }
+  .playing .match-note p {
+    font-size: 10px;
+  }
+  .playing #afk {
+    top: 112px;
+    left: 18px;
+    right: auto;
+    max-width: 170px;
+  }
+  .playing .bottom-hud {
+    bottom: max(14px, env(safe-area-inset-bottom));
+  }
+  .playing #phase-banner {
+    top: 24%;
+    font-size: 13px;
+  }
+}
