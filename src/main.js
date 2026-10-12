@@ -134,8 +134,8 @@ function updateHUD() {
     phase === "position"
       ? p?.alive
         ? scene.mobile
-          ? "← → to move. Tap the arena to aim."
-          : "Your rivals are hidden. Predict their next move."
+          ? "Tap to aim. Only other corners can be hit."
+          : "Rivals are hidden. Aim for another corner."
         : "You are out. Watch the next reveal."
       : "All positions revealed.";
   $("#shrink-notice").textContent =

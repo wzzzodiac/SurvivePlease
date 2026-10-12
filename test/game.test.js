@@ -10,6 +10,7 @@ import {
   perimeterPoint,
   rayHit,
   CONFIG,
+  cornerFor,
 } from "../shared/game.js";
 import { Rooms } from "../server/rooms.js";
 const duel = () => createGame([player("a", "Alpha"), player("b", "Beta")]);
@@ -68,7 +69,7 @@ test("point-blank rays hit overlapping circles in every direction", () => {
   assert.equal(rayHit(origin, 0, { x: -CONFIG.hitRadius - 0.001, z: 0 }), null);
 });
 
-test("overlapping players eliminate each other simultaneously on every arena size", () => {
+test("overlapping players cannot shoot each other on every arena size", () => {
   for (const radius of [duel().radius, CONFIG.finalRadius]) {
     for (const gap of [0, 0.001]) {
       for (const reverse of [false, true]) {
@@ -80,13 +81,73 @@ test("overlapping players eliminate each other simultaneously on every arena siz
         g.players[1].aim = Math.PI;
         if (reverse) g.players.reverse();
         resolve(g);
-        assert.ok(g.players.every((p) => !p.alive));
-        assert.ok(g.shots.every((shot) => shot.hit !== shot.id && shot.hit !== null));
-        advance(g, 4.7);
-        assert.equal(g.draw, true);
+        assert.ok(g.players.every((p) => p.alive));
+        assert.ok(g.shots.every((shot) => shot.hit === null));
       }
     }
   }
+});
+
+test("nearest corner zones wrap and divide at edge midpoints", () => {
+  for (let i = 0; i < 6; i++) {
+    assert.equal(cornerFor(i / 6), i);
+    assert.equal(cornerFor((i + 0.5) / 6 - 1e-6), i);
+    assert.equal(cornerFor((i + 0.5) / 6), (i + 1) % 6);
+    assert.equal(cornerFor((i + 0.5) / 6 + 1e-6), (i + 1) % 6);
+  }
+  assert.equal(cornerFor(-0.01), 0);
+  assert.equal(cornerFor(1.01), 0);
+});
+
+const aimAtEachOther = (g) => {
+  const [a, b] = g.players.map((p) => perimeterPoint(p.s, g.radius));
+  g.players[0].aim = Math.atan2(b.z - a.z, b.x - a.x);
+  g.players[1].aim = Math.atan2(a.z - b.z, a.x - b.x);
+};
+
+test("same-corner immunity covers both adjacent half-edges even far apart", () => {
+  const g = duel();
+  g.players[0].s = 0.92;
+  g.players[1].s = 0.08;
+  aimAtEachOther(g);
+  resolve(g);
+  assert.ok(g.players.every((p) => p.alive));
+  assert.deepEqual(g.shots.map((s) => s.hit), [null, null]);
+});
+
+test("different-corner boundary cannot reintroduce contact kills", () => {
+  for (const radius of [duel().radius, CONFIG.finalRadius]) {
+    const g = duel();
+    g.radius = radius;
+    g.players[0].s = 1 / 12 - 0.001;
+    g.players[1].s = 1 / 12 + 0.001;
+    assert.notEqual(cornerFor(g.players[0].s), cornerFor(g.players[1].s));
+    aimAtEachOther(g);
+    resolve(g);
+    assert.ok(g.players.every((p) => p.alive));
+    assert.ok(g.shots.every((s) => s.hit === null));
+  }
+});
+
+test("different corners remain hittable and simultaneous on the tiny core", () => {
+  const g = duel();
+  g.radius = CONFIG.finalRadius;
+  g.players[1].s = 1 / 6;
+  aimAtEachOther(g);
+  resolve(g);
+  assert.ok(g.players.every((p) => !p.alive));
+  assert.deepEqual(g.shots.map((s) => s.hit), ["b", "a"]);
+});
+
+test("same-corner players do not shield a valid rival beyond them", () => {
+  const g = createGame([player("a", "A"), player("b", "B"), player("c", "C")]);
+  g.players[0].s = g.players[1].s = 0;
+  g.players[2].s = 0.5;
+  g.players[0].aim = Math.PI;
+  g.players[1].aim = g.players[2].aim = Math.PI / 2;
+  resolve(g);
+  assert.equal(g.shots[0].hit, "c");
+  assert.equal(g.players[1].alive, true);
 });
 
 test("continuous movement remains on hexagon edges, including wrap and corners", () => {
