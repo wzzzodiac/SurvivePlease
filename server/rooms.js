@@ -1,5 +1,6 @@
 import {
   CONFIG,
+  ANIMALS,
   player,
   createGame,
   input,
@@ -43,7 +44,25 @@ export class Rooms {
   ready(r, id) {
     if (r.game) return;
     const p = r.players.find((p) => p.id === id);
-    if (p) p.ready = !p.ready;
+    if (p && !p.bot) p.ready = !p.ready;
+  }
+  bot(r, id, remove = false) {
+    if (r.host !== id) throw Error("Only the host can change bots");
+    if (r.game) throw Error("The match has already started");
+    if (remove) {
+      const index = r.players.findLastIndex((p) => p.bot);
+      if (index >= 0) r.players.splice(index, 1);
+      return;
+    }
+    if (r.players.length >= CONFIG.maxPlayers) throw Error("Room full");
+    const bot = player(
+      "bot-" + randomBytes(6).toString("hex"),
+      "Bot " + (r.players.filter((p) => p.bot).length + 1),
+      ANIMALS[r.players.length % ANIMALS.length],
+      true,
+    );
+    bot.ready = true;
+    r.players.push(bot);
   }
   start(r, id) {
     if (r.game) throw Error("The match has already started");
@@ -54,11 +73,12 @@ export class Rooms {
   }
   leave(r, id) {
     r.players = r.players.filter((p) => p.id !== id);
-    if (!r.players.length) {
+    const humans = r.players.filter((p) => !p.bot);
+    if (!humans.length) {
       this.rooms.delete(r.code);
       return;
     }
-    if (r.host === id) r.host = r.players[0].id;
+    if (r.host === id) r.host = humans[0].id;
     if (r.game) {
       const p = r.game.players.find((p) => p.id === id);
       if (p) {
@@ -74,11 +94,12 @@ export class Rooms {
       code: r.code,
       host: r.host,
       you: id,
-      lobby: r.players.map(({ id, name, animal, ready }) => ({
+      lobby: r.players.map(({ id, name, animal, ready, bot }) => ({
         id,
         name,
         animal,
         ready,
+        bot,
       })),
       game: r.game ? view(r.game, id) : null,
     };
