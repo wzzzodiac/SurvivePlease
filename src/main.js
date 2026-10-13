@@ -1,6 +1,7 @@
 import "./style.css";
 import { ArenaScene } from "./scene.js";
 import { GameAudio } from "./audio.js";
+import { OnlineMotion } from "./online-motion.js";
 import {
   ANIMALS,
   PALETTE,
@@ -54,6 +55,7 @@ let route = "home",
 const savedVolume = Number(localStorage.getItem("sp-volume") ?? 0.75);
 let volume = Number.isFinite(savedVolume) ? Math.max(0, Math.min(1, savedVolume)) : 0.75;
 const audio = new GameAudio(muted, volume);
+const onlineMotion = new OnlineMotion();
 function soundButton() {
   return `<div class="audio-controls"><button class="sound" data-action="sound" aria-label="${muted ? "Enable all audio" : "Mute all audio"}" aria-pressed="${!muted}" title="Music and sound effects">${muted ? "♪ OFF" : "♪ ON"}</button><details class="volume-control"><summary aria-label="Adjust volume" title="Adjust volume">⌄</summary><div class="volume-popover"><label for="audio-volume">MASTER VOLUME <output id="volume-value">${Math.round(volume * 100)}%</output></label><input id="audio-volume" type="range" min="0" max="100" step="1" value="${Math.round(volume * 100)}" aria-label="Master volume"><small>Music · Shots · Eliminations</small></div></details></div>`;
 }
@@ -107,7 +109,7 @@ function render() {
   }
   if (route === "lobby") {
     $("#ui").innerHTML =
-      `<header>${badge()}<div class="header-actions">${soundButton()}<button class="text-button" data-action="home">Leave room ↗</button></div></header><section class="lobby-panel"><div class="eyebrow">MEETING POINT</div><h1>The crew.</h1><button class="code" data-action="copy" aria-label="Copy room code">${escape(room.code)} <small>COPY CODE ↗</small></button><p>Share this code with your friends.</p><ul class="roster">${room.lobby.map((p, i) => `<li><span class="avatar" style="background:${PALETTE[i]}">${names[p.animal]?.slice(0, 1)}</span><strong>${escape(p.name)} ${p.id === you ? "(you)" : ""}</strong><span>${p.ready ? "✓ Ready" : "Getting ready"}</span></li>`).join("")}</ul><button class="primary" data-action="ready">${room.lobby.find((p) => p.id === you)?.ready ? "Not ready" : "Ready ✓"}</button>${room.host === you ? '<button class="secondary" data-action="start">Start match ↗</button>' : '<p class="micro">The host will start when everyone is ready.</p>'}<p class="micro">${room.lobby.length}/8 animals · Minimum 2 · Everyone ready</p></section>`;
+      `<header>${badge()}<div class="header-actions">${soundButton()}<button class="text-button" data-action="home">Leave room ↗</button></div></header><section class="lobby-panel"><div class="eyebrow">MEETING POINT</div><h1>The crew.</h1><button class="code" data-action="copy" aria-label="Copy room code">${escape(room.code)} <small>COPY CODE ↗</small></button><p>Share this code with your friends.</p><ul class="roster">${room.lobby.map((p, i) => `<li><span class="avatar" style="background:${PALETTE[i]}">${names[p.animal]?.slice(0, 1)}</span><strong>${escape(p.name)} ${p.bot ? "(bot)" : p.id === you ? "(you)" : ""}</strong><span>${p.ready ? "✓ Ready" : "Getting ready"}</span></li>`).join("")}</ul><button class="primary" data-action="ready">${room.lobby.find((p) => p.id === you)?.ready ? "Not ready" : "Ready ✓"}</button>${room.host === you ? `<div class="bot-controls"><button class="secondary" data-action="add-bot" ${room.lobby.length >= 8 ? "disabled" : ""}>Add bot +</button><button class="secondary" data-action="remove-bot" ${room.lobby.some((p) => p.bot) ? "" : "disabled"}>Remove bot −</button></div><button class="secondary" data-action="start">Start match ↗</button>` : '<p class="micro">The host will start when everyone is ready.</p>'}<p class="micro">${room.lobby.length}/8 animals · Humans + bots · Everyone ready</p></section>`;
     return;
   }
   if (route === "play" && g) {
@@ -215,6 +217,7 @@ function act(data) {
 }
 function reset() {
   audio.reset();
+  onlineMotion.reset();
   held = 0;
   pointerAim = null;
   local = null;
@@ -252,11 +255,13 @@ function connect(type) {
       throw Error("Use a ws:// or wss:// address");
     if (location.protocol === "https:" && parsed.protocol !== "wss:")
       throw Error("An HTTPS page needs a wss:// server");
-    if (socket) socket.close();
-    socket = new WebSocket(url);
+    if (socket) { socket.onclose = null; socket.close(); }
+    const connection = new WebSocket(url);
+    socket = connection;
     toast("Connecting to server…");
-    socket.onopen = () => send({ type, ...who, code });
+    socket.onopen = () => { if (socket === connection) send({ type, ...who, code }); };
     socket.onmessage = (e) => {
+      if (socket !== connection) return;
       let m;
       try {
         m = JSON.parse(e.data);
@@ -268,6 +273,7 @@ function connect(type) {
         room = m;
         you = m.you;
         state = m.game;
+        onlineMotion.receive(state, performance.now());
         route = state ? "play" : "lobby";
         render();
       }
@@ -279,12 +285,13 @@ function connect(type) {
     };
     socket.onerror = () =>
       toast("Could not connect. Check your internet connection and try again.");
-    socket.onclose = () => {
+    socket.onclose = (e) => {
+      if (socket !== connection) return;
       if (route === "play" || route === "lobby") {
         reset();
         route = "online";
         render();
-        toast("Connection closed. You can join a new room.");
+        toast(e.code === 1008 ? "Too many actions. Please rejoin the room." : "Connection lost. Please join a new room.");
       }
     };
   } catch (e) {
@@ -322,6 +329,7 @@ document.addEventListener("click", (e) => {
   }
   if (action === "create" || action === "join") connect(action);
   if (action === "ready" || action === "start") send({ type: action });
+  if (action === "add-bot" || action === "remove-bot") send({ type: action });
   if (action === "shoot") act({ lock: true });
   if (action === "copy")
     navigator.clipboard
@@ -352,6 +360,7 @@ document.addEventListener("keydown", (e) => {
   const key = e.key.toLowerCase();
   if (["a", "d", " ", "arrowleft", "arrowright"].includes(key))
     e.preventDefault();
+  if (e.repeat) return;
   if (key === "a" || key === "arrowleft") {
     held = -1;
     act({ move: held });
@@ -429,8 +438,9 @@ function loop(now) {
     updateHUD();
     lastHUD = now;
   }
-  audio.update(route === "play" ? state : null);
-  scene.draw(state, you, now / 1000, dt, route !== "play");
+  const display = !local && state ? onlineMotion.frame(state, you, held, pointerAim, now, dt) : state;
+  audio.update(route === "play" ? display : null);
+  scene.draw(display, you, now / 1000, dt, route !== "play");
 }
 render();
 requestAnimationFrame(loop);
