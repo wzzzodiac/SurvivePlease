@@ -133,7 +133,28 @@ i {
   background: #eff2e080;
   font-size: 10px;
   font-weight: 700;
+  min-height: 44px;
+  flex-shrink: 0;
 }
+.header-actions { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.header-actions .text-button { color: var(--cream); }
+.audio-controls { display: flex; align-items: center; gap: 4px; margin-left: auto; position: relative; pointer-events: auto; }
+.header-actions .audio-controls { margin-left: 0; }
+.volume-control summary { display: grid; place-items: center; cursor: pointer; list-style: none; width: 32px; height: 44px; color: var(--cream); border-radius: 12px; }
+.volume-control summary::-webkit-details-marker { display: none; }
+.volume-control summary:hover, .volume-control[open] summary { background: #eff2e020; }
+.volume-popover { position: absolute; top: calc(100% + 8px); right: 0; width: 220px; padding: 16px; background: var(--cream); color: var(--ink); border-radius: 14px; box-shadow: 0 10px 30px #0005; z-index: 5; }
+.volume-popover label { display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+.volume-popover input { width: 100%; height: 44px; padding: 0; margin: 3px 0; accent-color: var(--ink); cursor: pointer; touch-action: pan-y; }
+.volume-popover small { font-size: 10px; }
+@media (max-width: 760px) {
+  .header-actions { gap: 9px; }
+  .playing header { gap: 8px; }
+  .playing .mode-tag { max-width: 80px; }
+  .header-actions .sound { padding: 9px; }
+  .volume-control summary { width: 44px; }
+}
+@media (max-width: 420px) { .playing .mode-tag { display: none; } }
 .welcome {
   position: absolute;
   left: 6%;

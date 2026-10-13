@@ -1,5 +1,6 @@
 import "./style.css";
 import { ArenaScene } from "./scene.js";
+import { GameAudio } from "./audio.js";
 import {
   ANIMALS,
   PALETTE,
@@ -40,7 +41,7 @@ let route = "home",
   you = "you",
   socket = null,
   room = null,
-  muted = false,
+  muted = localStorage.getItem("sp-muted") === "true",
   lastKey = "",
   lastPhase = "",
   netSend = 0,
@@ -50,6 +51,12 @@ let route = "home",
   lastHUD = 0,
   pointerAim = null,
   lastNow = performance.now();
+const savedVolume = Number(localStorage.getItem("sp-volume") ?? 0.75);
+let volume = Number.isFinite(savedVolume) ? Math.max(0, Math.min(1, savedVolume)) : 0.75;
+const audio = new GameAudio(muted, volume);
+function soundButton() {
+  return `<div class="audio-controls"><button class="sound" data-action="sound" aria-label="${muted ? "Enable all audio" : "Mute all audio"}" aria-pressed="${!muted}" title="Music and sound effects">${muted ? "♪ OFF" : "♪ ON"}</button><details class="volume-control"><summary aria-label="Adjust volume" title="Adjust volume">⌄</summary><div class="volume-popover"><label for="audio-volume">MASTER VOLUME <output id="volume-value">${Math.round(volume * 100)}%</output></label><input id="audio-volume" type="range" min="0" max="100" step="1" value="${Math.round(volume * 100)}" aria-label="Master volume"><small>Music · Shots · Eliminations</small></div></details></div>`;
+}
 const names = {
   fox: "Fox",
   rabbit: "Rabbit",
@@ -100,17 +107,17 @@ function render() {
   $("#app").className = route === "play" ? "playing" : "menu";
   if (route === "home" || route === "online") {
     $("#ui").innerHTML =
-      `<header>${badge()}<span class="edition">PROTO 01 <i></i> POCKET ARENA</span><button class="sound" data-action="sound" aria-label="Toggle sound">${muted ? "♪ OFF" : "♪ ON"}</button></header><section class="welcome"><div class="eyebrow"><span></span> SMALL ANIMALS. BIG SUSPICIONS.</div><h1>Aim.<br> Breathe.<br> <em>Survive.</em></h1><p class="intro">Nobody knows where you are.<br>Until everyone fires.</p><div class="setup"><label for="player-name">YOUR NAME</label><input id="player-name" maxlength="18" placeholder="Miso" value="${escape(name)}" autocomplete="nickname">${choices()}${route === "home" ? '<button class="primary" data-action="practice">Play practice <span>↗</span></button><button class="secondary" data-action="online">Play with friends <span>2—8</span></button>' : `<div class="online-form"><label for="server-url">WEBSOCKET SERVER</label><input id="server-url" value="${escape(serverURL())}" placeholder="wss://your-server"><button class="primary" data-action="create">Create room <span>+</span></button><div class="join"><input id="room-code" aria-label="Room code" maxlength="6" placeholder="CODE"><button class="secondary" data-action="join">Join ↗</button></div><button class="text-button" data-action="home">← Back</button></div>`}</div><p class="micro">${route === "home" ? "Practice with 3 bots · No account · No waiting" : "Multiplayer needs a running server."}</p></section><aside class="world-note"><span class="coordinate">ISLAND 001 / THE CLEARING</span><h2>A quiet place.<br>For twenty seconds.</h2><p>Move along the edge. Pick your angle.<br>The reveal changes everything.</p></aside><footer><span><b>01</b> MOVE IN SECRET</span><span><b>02</b> LOCK YOUR SHOT</span><span><b>03</b> ALL AT ONCE</span><small>MADE FOR ONE MORE.</small></footer>`;
+      `<header>${badge()}<span class="edition">PROTO 01 <i></i> POCKET ARENA</span>${soundButton()}</header><section class="welcome"><div class="eyebrow"><span></span> SMALL ANIMALS. BIG SUSPICIONS.</div><h1>Aim.<br> Breathe.<br> <em>Survive.</em></h1><p class="intro">Nobody knows where you are.<br>Until everyone fires.</p><div class="setup"><label for="player-name">YOUR NAME</label><input id="player-name" maxlength="18" placeholder="Miso" value="${escape(name)}" autocomplete="nickname">${choices()}${route === "home" ? '<button class="primary" data-action="practice">Play practice <span>↗</span></button><button class="secondary" data-action="online">Play with friends <span>2—8</span></button>' : `<div class="online-form"><label for="server-url">WEBSOCKET SERVER</label><input id="server-url" value="${escape(serverURL())}" placeholder="wss://your-server"><button class="primary" data-action="create">Create room <span>+</span></button><div class="join"><input id="room-code" aria-label="Room code" maxlength="6" placeholder="CODE"><button class="secondary" data-action="join">Join ↗</button></div><button class="text-button" data-action="home">← Back</button></div>`}</div><p class="micro">${route === "home" ? "Practice with 3 bots · No account · No waiting" : "Multiplayer needs a running server."}</p></section><aside class="world-note"><span class="coordinate">ISLAND 001 / THE CLEARING</span><h2>A quiet place.<br>For twenty seconds.</h2><p>Move along the edge. Pick your angle.<br>The reveal changes everything.</p></aside><footer><span><b>01</b> MOVE IN SECRET</span><span><b>02</b> LOCK YOUR SHOT</span><span><b>03</b> ALL AT ONCE</span><small>MADE FOR ONE MORE.</small></footer>`;
     return;
   }
   if (route === "lobby") {
     $("#ui").innerHTML =
-      `<header>${badge()}<button class="text-button" data-action="home">Leave room ↗</button></header><section class="lobby-panel"><div class="eyebrow">MEETING POINT</div><h1>The crew.</h1><button class="code" data-action="copy" aria-label="Copy room code">${escape(room.code)} <small>COPY CODE ↗</small></button><p>Share the code and server address.</p><ul class="roster">${room.lobby.map((p, i) => `<li><span class="avatar" style="background:${PALETTE[i]}">${names[p.animal]?.slice(0, 1)}</span><strong>${escape(p.name)} ${p.id === you ? "(you)" : ""}</strong><span>${p.ready ? "✓ Ready" : "Getting ready"}</span></li>`).join("")}</ul><button class="primary" data-action="ready">${room.lobby.find((p) => p.id === you)?.ready ? "Not ready" : "Ready ✓"}</button>${room.host === you ? '<button class="secondary" data-action="start">Start match ↗</button>' : '<p class="micro">The host will start when everyone is ready.</p>'}<p class="micro">${room.lobby.length}/8 animals · Minimum 2 · Everyone ready</p></section>`;
+      `<header>${badge()}<div class="header-actions">${soundButton()}<button class="text-button" data-action="home">Leave room ↗</button></div></header><section class="lobby-panel"><div class="eyebrow">MEETING POINT</div><h1>The crew.</h1><button class="code" data-action="copy" aria-label="Copy room code">${escape(room.code)} <small>COPY CODE ↗</small></button><p>Share the code and server address.</p><ul class="roster">${room.lobby.map((p, i) => `<li><span class="avatar" style="background:${PALETTE[i]}">${names[p.animal]?.slice(0, 1)}</span><strong>${escape(p.name)} ${p.id === you ? "(you)" : ""}</strong><span>${p.ready ? "✓ Ready" : "Getting ready"}</span></li>`).join("")}</ul><button class="primary" data-action="ready">${room.lobby.find((p) => p.id === you)?.ready ? "Not ready" : "Ready ✓"}</button>${room.host === you ? '<button class="secondary" data-action="start">Start match ↗</button>' : '<p class="micro">The host will start when everyone is ready.</p>'}<p class="micro">${room.lobby.length}/8 animals · Minimum 2 · Everyone ready</p></section>`;
     return;
   }
   if (route === "play" && g) {
     $("#ui").innerHTML =
-      `<header>${badge()}<div class="mode-tag">${local ? "PRACTICE / 3 BOTS" : "ROOM / " + escape(room?.code || "")} <i></i></div><button class="text-button" data-action="home">Leave ↗</button></header><div class="match-top"><div class="round"><span>ROUND</span><strong>${String(g.round).padStart(2, "0")}</strong></div><div class="phase"><span id="phase-label"></span><strong id="timer"></strong><div class="time-track"><i id="time-fill"></i></div></div><div class="round right"><span>ALIVE</span><strong id="alive"></strong></div></div><aside class="match-note"><span class="eyebrow">THE CLEARING</span><p id="hint"></p><div id="shrink-notice"></div></aside><div id="phase-banner" role="status"></div><div class="bottom-hud"><div class="control-help"><b>A / D</b> move along the edge<br><b>MOUSE</b> aim · <b>SPACE</b> lock</div><div class="touch-move"><button data-hold="-1" aria-label="Move left">←</button><button data-hold="1" aria-label="Move right">→</button></div><div class="shoot-area"><div id="afk" role="status"></div><button id="shoot" class="primary" data-action="shoot">LOCK SHOT <span>↗</span></button><small id="shot-status"></small></div><div class="touch-help">Tap the arena<br>to aim</div><div class="ring-count"><span>RINGS</span><b>${g.rings}/${g.initialRings}</b></div></div><div id="result-overlay"></div>`;
+      `<header>${badge()}<div class="mode-tag">${local ? "PRACTICE / 3 BOTS" : "ROOM / " + escape(room?.code || "")} <i></i></div><div class="header-actions">${soundButton()}<button class="text-button" data-action="home">Leave ↗</button></div></header><div class="match-top"><div class="round"><span>ROUND</span><strong>${String(g.round).padStart(2, "0")}</strong></div><div class="phase"><span id="phase-label"></span><strong id="timer"></strong><div class="time-track"><i id="time-fill"></i></div></div><div class="round right"><span>ALIVE</span><strong id="alive"></strong></div></div><aside class="match-note"><span class="eyebrow">THE CLEARING</span><p id="hint"></p><div id="shrink-notice"></div></aside><div id="phase-banner" role="status"></div><div class="bottom-hud"><div class="control-help"><b>A / D</b> move along the edge<br><b>MOUSE</b> aim · <b>SPACE</b> lock</div><div class="touch-move"><button data-hold="-1" aria-label="Move left">←</button><button data-hold="1" aria-label="Move right">→</button></div><div class="shoot-area"><div id="afk" role="status"></div><button id="shoot" class="primary" data-action="shoot">LOCK SHOT <span>↗</span></button><small id="shot-status"></small></div><div class="touch-help">Tap the arena<br>to aim</div><div class="ring-count"><span>RINGS</span><b>${g.rings}/${g.initialRings}</b></div></div><div id="result-overlay"></div>`;
     updateHUD();
   }
 }
@@ -202,28 +209,7 @@ function updateHUD() {
     $("#result-overlay").innerHTML =
       `<section class="end-card"><div class="eyebrow">${g.draw ? "NOBODY SAW THAT COMING" : "LAST ANIMAL STANDING"}</div><h1>${g.draw ? "Draw!" : escape(win?.name || "Winner") + " survives."}</h1><p>${g.draw ? "Everyone fell in the same reveal." : "A good angle changes everything."}</p><p class="micro">${g.round} rounds · ${g.initialRings - g.rings + (g.duel ? 1 : 0)} shrinks</p><button class="primary" data-action="${local ? "practice" : "home"}">${local ? "Play again ↗" : "Back to menu ↗"}</button></section>`;
   } else if (phase !== "finished") $("#result-overlay").innerHTML = "";
-  if (phase !== lastPhase) {
-    lastPhase = phase;
-    if (phase === "reveal") sound();
-  }
-}
-let audio;
-function sound() {
-  if (muted) return;
-  try {
-    audio ??= new AudioContext();
-    audio.resume();
-    const o = audio.createOscillator(),
-      gain = audio.createGain();
-    o.type = "triangle";
-    o.frequency.setValueAtTime(420, audio.currentTime);
-    o.frequency.exponentialRampToValueAtTime(70, audio.currentTime + 0.23);
-    gain.gain.setValueAtTime(0.09, audio.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.3);
-    o.connect(gain).connect(audio.destination);
-    o.start();
-    o.stop(audio.currentTime + 0.3);
-  } catch {}
+  lastPhase = phase;
 }
 function send(data) {
   if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(data));
@@ -233,6 +219,7 @@ function act(data) {
   else send({ type: "input", ...data });
 }
 function reset() {
+  audio.reset();
   held = 0;
   pointerAim = null;
   local = null;
@@ -310,7 +297,14 @@ function connect(type) {
     toast(e.message);
   }
 }
+// Unlock on touch, mouse or keyboard; keep retries available after interruptions.
+for (const event of ["pointerdown", "keydown"]) {
+  document.addEventListener(event, (e) => {
+    if (e.isTrusted && !e.target.closest('[data-action="sound"]')) audio.unlock();
+  }, { capture: true });
+}
 document.addEventListener("click", (e) => {
+  if (!e.target.closest(".audio-controls")) $(".volume-control")?.removeAttribute("open");
   const animalButton = e.target.closest("[data-animal]");
   if (animalButton) {
     identity();
@@ -342,11 +336,24 @@ document.addEventListener("click", (e) => {
       .catch(() => toast(room.code));
   if (action === "sound") {
     muted = !muted;
-    lastKey = "";
-    render();
+    localStorage.setItem("sp-muted", String(muted));
+    audio.setMuted(muted);
+    const button = e.target.closest('[data-action="sound"]');
+    button.textContent = muted ? "♪ OFF" : "♪ ON";
+    button.setAttribute("aria-label", muted ? "Enable all audio" : "Mute all audio");
+    button.setAttribute("aria-pressed", String(!muted));
   }
 });
+document.addEventListener("input", (e) => {
+  if (e.target.id !== "audio-volume") return;
+  volume = Number(e.target.value) / 100;
+  audio.setVolume(volume);
+  localStorage.setItem("sp-volume", String(volume));
+  $("#volume-value").textContent = `${Math.round(volume * 100)}%`;
+});
 document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") $(".volume-control")?.removeAttribute("open");
+  if (e.target.closest(".audio-controls")) return;
   if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
   const key = e.key.toLowerCase();
   if (["a", "d", " ", "arrowleft", "arrowright"].includes(key))
@@ -375,6 +382,7 @@ function stop() {
 window.addEventListener("blur", stop);
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) stop();
+  audio.setVisible(!document.hidden, state);
 });
 document.addEventListener("pointerdown", (e) => {
   const button = e.target.closest("[data-hold]");
@@ -427,6 +435,7 @@ function loop(now) {
     updateHUD();
     lastHUD = now;
   }
+  audio.update(route === "play" ? state : null);
   scene.draw(state, you, now / 1000, dt, route !== "play");
 }
 render();
