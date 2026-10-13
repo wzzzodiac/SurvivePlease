@@ -3,8 +3,10 @@
   "separateContexts": true,
   "hiddenPacketsPrivate": true,
   "simultaneousShotsIdentical": true,
-  "earlyResolutionMs": 101,
+  "earlyResolutionMs": 149,
   "disconnectHandled": true,
   "untrustedOriginRejected": true,
-  "errors": []
+  "errors": [],
+  "site": "https://wzzzodiac.github.io/SurvivePlease/",
+  "endpoint": "wss://surviveplease-873648916633.europe-west1.run.app"
 }
