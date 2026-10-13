@@ -68,6 +68,14 @@ function identity() {
   localStorage.setItem("sp-name", name);
   return { name, animal: selected };
 }
+function serverURL() {
+  const fallback = import.meta.env.VITE_WS_URL || "ws://localhost:3001";
+  const saved = localStorage.getItem("sp-server");
+  // Old local previews must not override the deployed secure endpoint.
+  return location.protocol === "https:" && saved?.toLowerCase().startsWith("ws:")
+    ? fallback
+    : saved || fallback;
+}
 function choices() {
   return `<fieldset class="animals"><legend>Choose your little survivor</legend>${ANIMALS.map((a, i) => `<button type="button" data-animal="${a}" class="animal ${selected === a ? "selected" : ""}" aria-pressed="${selected === a}" style="--animal:${PALETTE[i]}"><span>${["◆", "♧", "◒", "●"][i]}</span>${names[a]}</button>`).join("")}</fieldset>`;
 }
@@ -92,7 +100,7 @@ function render() {
   $("#app").className = route === "play" ? "playing" : "menu";
   if (route === "home" || route === "online") {
     $("#ui").innerHTML =
-      `<header>${badge()}<span class="edition">PROTO 01 <i></i> POCKET ARENA</span><button class="sound" data-action="sound" aria-label="Toggle sound">${muted ? "♪ OFF" : "♪ ON"}</button></header><section class="welcome"><div class="eyebrow"><span></span> SMALL ANIMALS. BIG SUSPICIONS.</div><h1>Aim.<br> Breathe.<br> <em>Survive.</em></h1><p class="intro">Nobody knows where you are.<br>Until everyone fires.</p><div class="setup"><label for="player-name">YOUR NAME</label><input id="player-name" maxlength="18" placeholder="Miso" value="${escape(name)}" autocomplete="nickname">${choices()}${route === "home" ? '<button class="primary" data-action="practice">Play practice <span>↗</span></button><button class="secondary" data-action="online">Play with friends <span>2—8</span></button>' : `<div class="online-form"><label for="server-url">WEBSOCKET SERVER</label><input id="server-url" value="${escape(localStorage.getItem("sp-server") || import.meta.env.VITE_WS_URL || "ws://localhost:3001")}" placeholder="wss://your-server"><button class="primary" data-action="create">Create room <span>+</span></button><div class="join"><input id="room-code" aria-label="Room code" maxlength="6" placeholder="CODE"><button class="secondary" data-action="join">Join ↗</button></div><button class="text-button" data-action="home">← Back</button></div>`}</div><p class="micro">${route === "home" ? "Practice with 3 bots · No account · No waiting" : "Multiplayer needs a running server."}</p></section><aside class="world-note"><span class="coordinate">ISLAND 001 / THE CLEARING</span><h2>A quiet place.<br>For twenty seconds.</h2><p>Move along the edge. Pick your angle.<br>The reveal changes everything.</p></aside><footer><span><b>01</b> MOVE IN SECRET</span><span><b>02</b> LOCK YOUR SHOT</span><span><b>03</b> ALL AT ONCE</span><small>MADE FOR ONE MORE.</small></footer>`;
+      `<header>${badge()}<span class="edition">PROTO 01 <i></i> POCKET ARENA</span><button class="sound" data-action="sound" aria-label="Toggle sound">${muted ? "♪ OFF" : "♪ ON"}</button></header><section class="welcome"><div class="eyebrow"><span></span> SMALL ANIMALS. BIG SUSPICIONS.</div><h1>Aim.<br> Breathe.<br> <em>Survive.</em></h1><p class="intro">Nobody knows where you are.<br>Until everyone fires.</p><div class="setup"><label for="player-name">YOUR NAME</label><input id="player-name" maxlength="18" placeholder="Miso" value="${escape(name)}" autocomplete="nickname">${choices()}${route === "home" ? '<button class="primary" data-action="practice">Play practice <span>↗</span></button><button class="secondary" data-action="online">Play with friends <span>2—8</span></button>' : `<div class="online-form"><label for="server-url">WEBSOCKET SERVER</label><input id="server-url" value="${escape(serverURL())}" placeholder="wss://your-server"><button class="primary" data-action="create">Create room <span>+</span></button><div class="join"><input id="room-code" aria-label="Room code" maxlength="6" placeholder="CODE"><button class="secondary" data-action="join">Join ↗</button></div><button class="text-button" data-action="home">← Back</button></div>`}</div><p class="micro">${route === "home" ? "Practice with 3 bots · No account · No waiting" : "Multiplayer needs a running server."}</p></section><aside class="world-note"><span class="coordinate">ISLAND 001 / THE CLEARING</span><h2>A quiet place.<br>For twenty seconds.</h2><p>Move along the edge. Pick your angle.<br>The reveal changes everything.</p></aside><footer><span><b>01</b> MOVE IN SECRET</span><span><b>02</b> LOCK YOUR SHOT</span><span><b>03</b> ALL AT ONCE</span><small>MADE FOR ONE MORE.</small></footer>`;
     return;
   }
   if (route === "lobby") {
