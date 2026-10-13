@@ -2,9 +2,15 @@ import { createServer } from "node:http";
 import { randomUUID } from "node:crypto";
 import { WebSocketServer, WebSocket } from "ws";
 import { Rooms } from "./rooms.js";
+import { CONFIG } from "../shared/game.js";
 const rooms = new Rooms(),
   clients = new Map(),
   buckets = new Map();
+const maxConnections = CONFIG.maxRooms * CONFIG.maxPlayers;
+// Cloud Run proxies can share a socket IP. Keep the instance bounded without
+// mistaking all players for one household or trusting client-supplied headers.
+const ipConnections = process.env.K_SERVICE ? maxConnections : 12;
+const ipOpensPerMinute = process.env.K_SERVICE ? maxConnections * 2 : 20;
 const origins = (
   process.env.ALLOWED_ORIGINS ||
   "http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173"
@@ -36,8 +42,9 @@ server.on("upgrade", (req, socket, head) => {
   }
   if (
     !origins.includes(req.headers.origin) ||
-    ++b.count > 20 ||
-    [...clients.values()].filter((c) => c.ip === ip).length >= 12
+    clients.size >= maxConnections ||
+    ++b.count > ipOpensPerMinute ||
+    [...clients.values()].filter((c) => c.ip === ip).length >= ipConnections
   ) {
     socket.end("HTTP/1.1 403 Forbidden\r\n\r\n");
     return;
