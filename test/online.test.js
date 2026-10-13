@@ -37,6 +37,32 @@ test("bots never inherit hosting or keep a room alive without humans", () => {
 const snapshot = () => ({ phase: "position", round: 1, radius: 5.3, clock: 1, remaining: 19, players: [
   { id: "you", alive: true, locked: false, s: 0.999, aim: 1 }, { id: "hidden", alive: true },
 ] });
+test("rematch preserves room, human identities and bots while resetting match state/readiness", () => {
+  const rooms = new Rooms(), r = rooms.create("a", "A", "fox");
+  rooms.join(r.code, "b", "B", "frog");
+  rooms.bot(r, "a");
+  const crew = r.players.map(({ id, name, animal, bot }) => ({ id, name, animal, bot }));
+  rooms.ready(r, "a"); rooms.ready(r, "b"); rooms.start(r, "a");
+  assert.throws(() => rooms.rematch(r, "a"), /ends/);
+  r.game.phase = "finished";
+  r.game.players.forEach((p) => { p.alive = false; p.afk = 3; });
+  assert.throws(() => rooms.rematch(r, "b"), /host/);
+  rooms.rematch(r, "a");
+  assert.equal(rooms.rooms.get(r.code), r);
+  assert.equal(r.game, null);
+  assert.deepEqual(r.players.map(({ id, name, animal, bot }) => ({ id, name, animal, bot })), crew);
+  assert(r.players.every((p) => p.alive && p.afk === 0 && p.ready === p.bot));
+  assert.throws(() => rooms.start(r, "a"), /ready/);
+  rooms.ready(r, "a"); rooms.ready(r, "b"); rooms.start(r, "a");
+  assert.equal(r.game.round, 1);
+  assert(r.game.players.every((p) => p.alive && !p.locked && p.afk === 0));
+  assert.equal(r.game.shots.length, 0);
+  r.game.phase = "finished";
+  rooms.leave(r, "a");
+  rooms.rematch(r, "b");
+  assert.equal(r.host, "b");
+  assert.equal(r.players.length, 2);
+});
 test("online presentation moves between packets, wraps corners and keeps authority/private state intact", () => {
   const motion = new OnlineMotion(), game = snapshot(), before = structuredClone(game);
   motion.receive(game, 1000);

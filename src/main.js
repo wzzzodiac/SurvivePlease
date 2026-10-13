@@ -204,7 +204,7 @@ function updateHUD() {
   if (phase === "finished" && !$("#result-overlay").firstElementChild) {
     const win = g.players.find((p) => p.id === g.winner);
     $("#result-overlay").innerHTML =
-      `<section class="end-card"><div class="eyebrow">${g.draw ? "NOBODY SAW THAT COMING" : "LAST ANIMAL STANDING"}</div><h1>${g.draw ? "Draw!" : escape(win?.name || "Winner") + " survives."}</h1><p>${g.draw ? "Everyone fell in the same reveal." : "A good angle changes everything."}</p><p class="micro">${g.round} rounds · ${g.initialRings - g.rings + (g.duel ? 1 : 0)} shrinks</p><button class="primary" data-action="${local ? "practice" : "home"}">${local ? "Play again ↗" : "Back to menu ↗"}</button></section>`;
+      `<section class="end-card"><div class="eyebrow">${g.draw ? "NOBODY SAW THAT COMING" : "LAST ANIMAL STANDING"}</div><h1>${g.draw ? "Draw!" : escape(win?.name || "Winner") + " survives."}</h1><p>${g.draw ? "Everyone fell in the same reveal." : "A good angle changes everything."}</p><p class="micro">${g.round} rounds · ${g.initialRings - g.rings + (g.duel ? 1 : 0)} shrinks</p>${local ? '<button class="primary" data-action="practice">Play again ↗</button>' : `${room.host === you ? '<button class="primary" data-action="rematch">Rematch ↗</button><p class="micro">Same room and crew. Ready up for the next match.</p>' : '<p class="micro">Waiting for the host to request a rematch.</p>'}<button class="secondary" data-action="home">Leave room ↗</button>`}</section>`;
   } else if (phase !== "finished") $("#result-overlay").innerHTML = "";
   lastPhase = phase;
 }
@@ -270,6 +270,12 @@ function connect(type) {
       }
       if (m.type === "error") toast(m.message);
       if (m.type === "state") {
+        if (Boolean(state) !== Boolean(m.game)) {
+          audio.reset();
+          onlineMotion.reset();
+          held = 0;
+          pointerAim = null;
+        }
         room = m;
         you = m.you;
         state = m.game;
@@ -329,6 +335,7 @@ document.addEventListener("click", (e) => {
   }
   if (action === "create" || action === "join") connect(action);
   if (action === "ready" || action === "start") send({ type: action });
+  if (action === "rematch") send({ type: action });
   if (action === "add-bot" || action === "remove-bot") send({ type: action });
   if (action === "shoot") act({ lock: true });
   if (action === "copy")

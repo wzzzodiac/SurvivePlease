@@ -88,6 +88,15 @@ export class Rooms {
       }
     }
   }
+  rematch(r, id) {
+    if (r.host !== id) throw Error("Only the host can request a rematch");
+    if (r.game?.phase !== "finished") throw Error("Wait until the match ends");
+    r.game = null;
+    r.players = r.players.map((p) => ({
+      ...player(p.id, p.name, p.animal, p.bot),
+      ready: p.bot,
+    }));
+  }
   state(r, id) {
     return {
       type: "state",

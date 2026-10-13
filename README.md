@@ -23,7 +23,7 @@ Abre **http://localhost:5173** y pulsa **Play practice**. Tres bots permiten jug
 npm run server
 ```
 
-En dos navegadores o sesiones independientes, entra en **Play with friends**, crea una sala y comparte su código. La conexión a `ws://localhost:3001` es automática en desarrollo. Todos deben pulsar **Ready**; el anfitrión pulsa **Start match**. Para otra partida online, vuelve al menú y crea una nueva sala.
+En dos navegadores o sesiones independientes, entra en **Play with friends**, crea una sala y comparte su código. La conexión a `ws://localhost:3001` es automática en desarrollo. Todos deben pulsar **Ready**; el anfitrión pulsa **Start match**. Al terminar, el anfitrión pulsa **Rematch**: todos vuelven al lobby de la misma sala con los mismos bots. Los humanos marcan **Ready** y el anfitrión inicia otra partida.
 
 Desde otro dispositivo de la red, configura `VITE_WS_URL=ws://192.168.1.20:3001` antes de iniciar Vite y abre, por ejemplo, `http://192.168.1.20:5173`. Añade explícitamente el origen del frontend a `ALLOWED_ORIGINS` antes de iniciar el backend. No se han modificado reglas del firewall.
 
@@ -54,7 +54,7 @@ Al fijar, quedas bloqueado hasta la siguiente ronda. El disparo sale con todos l
 
 El cliente envía intención de movimiento (`-1`, `0`, `1`), ángulo y confirmación. El servidor calcula posición, reloj, bloqueo, colisiones, inactividad, contracción y ganador. No acepta coordenadas ni impactos declarados por clientes. La práctica comparte este motor de reglas. Los bots eligen ángulos hacia el centro con variación aleatoria sin consultar posiciones rivales ocultas.
 
-Las teclas mantenidas no reenvían su repetición automática: el envío periódico de intención ya mantiene el movimiento, evitando superar los 40 mensajes/s y provocar el cierre `1008`. El servidor transmite instantáneas a 20 Hz sin duplicar respuestas a cada entrada. `src/online-motion.js` predice visualmente al jugador local entre paquetes y reconcilia suavemente sobre el perímetro; al bloquear/disparar se conserva la posición autoritativa. Nunca inventa posiciones de rivales ocultos. La extrapolación del reloj está acotada a 120 ms.
+Las teclas mantenidas no reenvían su repetición automática: el envío periódico de intención ya mantiene el movimiento, evitando superar los 40 mensajes/s y provocar el cierre `1008`. El servidor transmite instantáneas a 20 Hz sin duplicar respuestas a cada entrada. `src/online-motion.js` predice visualmente al jugador local entre paquetes y reconcilia suavemente sobre el perímetro; al bloquear/disparar se conserva la posición autoritativa. Nunca inventa posiciones de rivales ocultos. La extrapolación del reloj está acotada a 120 ms. En la revelación, las líneas crecen desde el arma durante 180 ms; la caída, el destello y el sonido de eliminación esperan a la llegada visual. Las colisiones siguen resolviéndose simultáneamente en el servidor.
 
 Regresión: `node qa/online.mjs` verifica dos clientes, llenar/quitar bots, una tecla repetida a 40 eventos/s durante cuatro segundos sin desconexión, posiciones ocultas y siete disparos simultáneos. Simula 70 ms de envío y 60–80 ms de recepción; comprueba que el avatar cambia entre instantáneas en el preview local. Admite `QA_URL` para comprobar el despliegue público. Estas pruebas no sustituyen mediciones en dispositivos físicos o redes móviles reales.
 
@@ -178,4 +178,4 @@ Verificación: `npm test`, `npm run build` y `node qa/audio.mjs` (Edge, escritor
 
 ## Estado
 
-Práctica y multijugador publicados y comprobados con dos clientes en la red pública. Quedan pruebas de carga/dispositivos físicos, reconexión y revancha en la misma sala.
+Práctica y multijugador publicados y comprobados con dos clientes en la red pública. Quedan pruebas de carga/dispositivos físicos, reconexión automática.
