@@ -1,0 +1,5 @@
+{
+  "sameSocketIPConnections": 40,
+  "extraConnectionRejected": true,
+  "environment": "Local Node backend with Cloud Run K_SERVICE; not a cloud load test."
+}
