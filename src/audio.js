@@ -1,11 +1,12 @@
-// Beams and falls become visible 0.65 seconds into each reveal.
+import { SHOT_START, SHOT_TRAVEL } from "./reveal.js";
+// Shots start at the reveal cue; elimination sounds follow their arrival.
 // Consume muted/hidden reveals too, so returning never replays old effects.
 export class RevealCues {
   reset() { this.round = null; }
   update(game, audible) {
     if (game?.phase !== "reveal" || game.round === this.round) return null;
     if (!audible) { this.round = game.round; return null; }
-    if (game.clock < 0.65) return null;
+    if (game.clock < SHOT_START) return null;
     this.round = game.round;
     if (game.clock > 1.4) return null;
     return { shots: game.shots.length, deaths: game.eliminated.length };
@@ -92,8 +93,9 @@ export class GameAudio {
       this.tone("sine", 170, 65, 0, 0.11, 0.15);
     }
     if (cue.deaths) {
-      this.tone("sine", 520, 130, 0.12, 0.42, 0.18);
-      this.tone("triangle", 260, 65, 0.18, 0.40, 0.08);
+      const delay = Math.max(0, SHOT_START + SHOT_TRAVEL - game.clock);
+      this.tone("sine", 520, 130, delay, 0.42, 0.18);
+      this.tone("triangle", 260, 65, delay + 0.06, 0.40, 0.08);
     }
   }
 }

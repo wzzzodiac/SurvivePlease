@@ -107,6 +107,7 @@ wss.on("connection", (ws, req) => {
       } else if (c.room) {
         if (m.type === "ready") rooms.ready(c.room, id);
         if (m.type === "start") rooms.start(c.room, id);
+        if (m.type === "rematch") rooms.rematch(c.room, id);
         if (m.type === "add-bot") rooms.bot(c.room, id);
         if (m.type === "remove-bot") rooms.bot(c.room, id, true);
         if (m.type === "input") rooms.input(c.room, id, m);
