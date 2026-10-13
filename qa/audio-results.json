@@ -1,0 +1,96 @@
+{
+  "url": "http://127.0.0.1:5173/",
+  "checks": [
+    {
+      "width": 1280,
+      "music": {
+        "duration": 117.368163,
+        "loop": true
+      },
+      "bounds": [
+        {
+          "text": "S!SURVIVEPLEASE",
+          "left": 42,
+          "right": 171.890625
+        },
+        {
+          "text": "PRACTICE / 3 BOTS ",
+          "left": 571.1875,
+          "right": 695.859375
+        },
+        {
+          "text": "♪ ON",
+          "left": 1095.15625,
+          "right": 1145.65625
+        },
+        {
+          "text": "⌄",
+          "left": 1149.65625,
+          "right": 1181.65625
+        },
+        {
+          "text": "MASTER VOLUME 30%Music · Shots · Eliminations",
+          "left": 961.65625,
+          "right": 1181.65625
+        },
+        {
+          "text": "Leave ↗",
+          "left": 1197.65625,
+          "right": 1238
+        }
+      ],
+      "autoplay": "gesture only",
+      "mute": "persists",
+      "volume": "master gain 0/30%, persists across reload and mute",
+      "visibility": "pauses/resumes"
+    },
+    {
+      "width": 320,
+      "music": {
+        "duration": 117.368163,
+        "loop": true
+      },
+      "bounds": [
+        {
+          "text": "S!SURVIVEPLEASE",
+          "left": 20,
+          "right": 121.09375
+        },
+        {
+          "text": "♪ ON",
+          "left": 163.828125,
+          "right": 206.328125
+        },
+        {
+          "text": "⌄",
+          "left": 210.328125,
+          "right": 254.328125
+        },
+        {
+          "text": "MASTER VOLUME 30%Music · Shots · Eliminations",
+          "left": 34.328125,
+          "right": 254.328125
+        },
+        {
+          "text": "Leave ↗",
+          "left": 263.328125,
+          "right": 300
+        }
+      ],
+      "autoplay": "gesture only",
+      "mute": "persists",
+      "volume": "master gain 0/30%, persists across reload and mute",
+      "visibility": "pauses/resumes"
+    }
+  ],
+  "liveReveal": {
+    "oscillatorVoices": 2,
+    "repeatsInResults": false
+  },
+  "effects": {
+    "peak": 0.2533501982688904,
+    "rms": 0.02208307865185646,
+    "tail": 0,
+    "remainingVoices": 0
+  }
+}

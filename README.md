@@ -166,6 +166,12 @@ En Cloud Run (`K_SERVICE`), se permiten hasta 40 conexiones por instancia y 80 a
 
 Verificación pública con dos contextos de Edge y WebSocket reales: crear/unirse, listo/inicio, movimiento, privacidad de paquetes, disparos idénticos, desconexión y rechazo de un origen no autorizado ([resultado](qa/multiplayer-results.json)). Repetir con `QA_URL` y `QA_WS_URL` al ejecutar `node qa/multiplayer.mjs`.
 
+## Audio
+
+Música de bosque en bucle y efectos originales de disparos/eliminaciones, sincronizados con la revelación. Se activan con el primer gesto, se pausan al ocultar la pestaña y se silencian con `♪ ON / OFF` también dentro de la partida. La flecha contigua despliega el volumen maestro para música y todos los efectos; volumen y silencio se guardan por separado en el navegador. El MP3 pesa 1.17 MB y se carga al activar audio; no se decodifica completo en un buffer de JavaScript. Fuente, licencia y adaptación: [AUDIO_CREDITS.md](AUDIO_CREDITS.md).
+
+Verificación: `npm test`, `npm run build` y `node qa/audio.mjs` (Edge, escritorio y viewport táctil de 320 px; no dispositivo físico). La prueba comprueba gesto inicial, reproducción, silencio persistente, pausa/reanudación y síntesis de efectos sin clipping.
+
 ## Estado
 
-Práctica y multijugador publicados y comprobados con dos clientes en la red pública. Quedan pruebas de carga/dispositivos físicos, reconexión, revancha en la misma sala y más pulido de efectos/audio.
+Práctica y multijugador publicados y comprobados con dos clientes en la red pública. Quedan pruebas de carga/dispositivos físicos, reconexión y revancha en la misma sala.
