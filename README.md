@@ -23,9 +23,9 @@ Abre **http://localhost:5173** y pulsa **Play practice**. Tres bots permiten jug
 npm run server
 ```
 
-En dos navegadores o sesiones independientes, entra en **Play with friends**, usa `ws://localhost:3001`, crea una sala y comparte su código. Todos deben pulsar **Ready**; el anfitrión pulsa **Start match**. Para otra partida online, vuelve al menú y crea una nueva sala.
+En dos navegadores o sesiones independientes, entra en **Play with friends**, crea una sala y comparte su código. La conexión a `ws://localhost:3001` es automática en desarrollo. Todos deben pulsar **Ready**; el anfitrión pulsa **Start match**. Para otra partida online, vuelve al menú y crea una nueva sala.
 
-Desde otro dispositivo de la red, utiliza la IP del equipo en ambos enlaces, por ejemplo `http://192.168.1.20:5173` y `ws://192.168.1.20:3001`. Añade explícitamente el origen del frontend a `ALLOWED_ORIGINS` antes de iniciar el backend. No se han modificado reglas del firewall.
+Desde otro dispositivo de la red, configura `VITE_WS_URL=ws://192.168.1.20:3001` antes de iniciar Vite y abre, por ejemplo, `http://192.168.1.20:5173`. Añade explícitamente el origen del frontend a `ALLOWED_ORIGINS` antes de iniciar el backend. No se han modificado reglas del firewall.
 
 ## Controles
 
@@ -160,7 +160,7 @@ Proyecto **Walter Projects** (`orbital-artillery`), servicio **surviveplease**, 
 
 Configuración: 1 CPU, 512 MiB, facturación por solicitudes, mínimo 0 y máximo 1 instancia, concurrencia 80 y timeout WebSocket de 3600 segundos. Origen permitido: `https://wzzzodiac.github.io`. Cloud Build compila el Dockerfile y despliega los cambios de `main` automáticamente. Las salas viven en memoria y se pierden al reiniciar o desplegar; no hay reconexión automática.
 
-El frontend Pages usa la variable de repositorio `VITE_WS_URL`. Las direcciones locales `ws://` guardadas en pruebas anteriores se sustituyen por el endpoint seguro en HTTPS; se conservan las direcciones personalizadas `wss://`. Cada actualización del frontend requiere ejecutar el workflow de Pages.
+El frontend Pages usa la variable de repositorio `VITE_WS_URL`. La conexión es automática: el formulario solo pide el código de sala y no usa direcciones antiguas guardadas en el navegador. Cada actualización del frontend requiere ejecutar el workflow de Pages.
 
 En Cloud Run (`K_SERVICE`), se permiten hasta 40 conexiones por instancia y 80 aperturas/minuto por IP del proxy; se conservan 40 mensajes/s por conexión, cinco creaciones/minuto por IP y el máximo de cinco salas. No se confía en `X-Forwarded-For`. En local siguen los límites de 12 conexiones y 20 aperturas/minuto por IP. La prueba local de compatibilidad admite 40 conexiones con una misma IP y rechaza la 41 ([resultado](qa/cloud-run-capacity.json)); no es una prueba de carga de Cloud Run.
 

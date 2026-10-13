@@ -76,12 +76,7 @@ function identity() {
   return { name, animal: selected };
 }
 function serverURL() {
-  const fallback = import.meta.env.VITE_WS_URL || "ws://localhost:3001";
-  const saved = localStorage.getItem("sp-server");
-  // Old local previews must not override the deployed secure endpoint.
-  return location.protocol === "https:" && saved?.toLowerCase().startsWith("ws:")
-    ? fallback
-    : saved || fallback;
+  return import.meta.env.VITE_WS_URL || "ws://localhost:3001";
 }
 function choices() {
   return `<fieldset class="animals"><legend>Choose your little survivor</legend>${ANIMALS.map((a, i) => `<button type="button" data-animal="${a}" class="animal ${selected === a ? "selected" : ""}" aria-pressed="${selected === a}" style="--animal:${PALETTE[i]}"><span>${["◆", "♧", "◒", "●"][i]}</span>${names[a]}</button>`).join("")}</fieldset>`;
@@ -107,12 +102,12 @@ function render() {
   $("#app").className = route === "play" ? "playing" : "menu";
   if (route === "home" || route === "online") {
     $("#ui").innerHTML =
-      `<header>${badge()}<span class="edition">PROTO 01 <i></i> POCKET ARENA</span>${soundButton()}</header><section class="welcome"><div class="eyebrow"><span></span> SMALL ANIMALS. BIG SUSPICIONS.</div><h1>Aim.<br> Breathe.<br> <em>Survive.</em></h1><p class="intro">Nobody knows where you are.<br>Until everyone fires.</p><div class="setup"><label for="player-name">YOUR NAME</label><input id="player-name" maxlength="18" placeholder="Miso" value="${escape(name)}" autocomplete="nickname">${choices()}${route === "home" ? '<button class="primary" data-action="practice">Play practice <span>↗</span></button><button class="secondary" data-action="online">Play with friends <span>2—8</span></button>' : `<div class="online-form"><label for="server-url">WEBSOCKET SERVER</label><input id="server-url" value="${escape(serverURL())}" placeholder="wss://your-server"><button class="primary" data-action="create">Create room <span>+</span></button><div class="join"><input id="room-code" aria-label="Room code" maxlength="6" placeholder="CODE"><button class="secondary" data-action="join">Join ↗</button></div><button class="text-button" data-action="home">← Back</button></div>`}</div><p class="micro">${route === "home" ? "Practice with 3 bots · No account · No waiting" : "Multiplayer needs a running server."}</p></section><aside class="world-note"><span class="coordinate">ISLAND 001 / THE CLEARING</span><h2>A quiet place.<br>For twenty seconds.</h2><p>Move along the edge. Pick your angle.<br>The reveal changes everything.</p></aside><footer><span><b>01</b> MOVE IN SECRET</span><span><b>02</b> LOCK YOUR SHOT</span><span><b>03</b> ALL AT ONCE</span><small>MADE FOR ONE MORE.</small></footer>`;
+      `<header>${badge()}<span class="edition">PROTO 01 <i></i> POCKET ARENA</span>${soundButton()}</header><section class="welcome"><div class="eyebrow"><span></span> SMALL ANIMALS. BIG SUSPICIONS.</div><h1>Aim.<br> Breathe.<br> <em>Survive.</em></h1><p class="intro">Nobody knows where you are.<br>Until everyone fires.</p><div class="setup"><label for="player-name">YOUR NAME</label><input id="player-name" maxlength="18" placeholder="Miso" value="${escape(name)}" autocomplete="nickname">${choices()}${route === "home" ? '<button class="primary" data-action="practice">Play practice <span>↗</span></button><button class="secondary" data-action="online">Play with friends <span>2—8</span></button>' : `<div class="online-form"><button class="primary" data-action="create">Create room <span>+</span></button><div class="join"><input id="room-code" aria-label="Room code" maxlength="6" placeholder="CODE"><button class="secondary" data-action="join">Join ↗</button></div><button class="text-button" data-action="home">← Back</button></div>`}</div><p class="micro">${route === "home" ? "Practice with 3 bots · No account · No waiting" : "Create a room or join with a code."}</p></section><aside class="world-note"><span class="coordinate">ISLAND 001 / THE CLEARING</span><h2>A quiet place.<br>For twenty seconds.</h2><p>Move along the edge. Pick your angle.<br>The reveal changes everything.</p></aside><footer><span><b>01</b> MOVE IN SECRET</span><span><b>02</b> LOCK YOUR SHOT</span><span><b>03</b> ALL AT ONCE</span><small>MADE FOR ONE MORE.</small></footer>`;
     return;
   }
   if (route === "lobby") {
     $("#ui").innerHTML =
-      `<header>${badge()}<div class="header-actions">${soundButton()}<button class="text-button" data-action="home">Leave room ↗</button></div></header><section class="lobby-panel"><div class="eyebrow">MEETING POINT</div><h1>The crew.</h1><button class="code" data-action="copy" aria-label="Copy room code">${escape(room.code)} <small>COPY CODE ↗</small></button><p>Share the code and server address.</p><ul class="roster">${room.lobby.map((p, i) => `<li><span class="avatar" style="background:${PALETTE[i]}">${names[p.animal]?.slice(0, 1)}</span><strong>${escape(p.name)} ${p.id === you ? "(you)" : ""}</strong><span>${p.ready ? "✓ Ready" : "Getting ready"}</span></li>`).join("")}</ul><button class="primary" data-action="ready">${room.lobby.find((p) => p.id === you)?.ready ? "Not ready" : "Ready ✓"}</button>${room.host === you ? '<button class="secondary" data-action="start">Start match ↗</button>' : '<p class="micro">The host will start when everyone is ready.</p>'}<p class="micro">${room.lobby.length}/8 animals · Minimum 2 · Everyone ready</p></section>`;
+      `<header>${badge()}<div class="header-actions">${soundButton()}<button class="text-button" data-action="home">Leave room ↗</button></div></header><section class="lobby-panel"><div class="eyebrow">MEETING POINT</div><h1>The crew.</h1><button class="code" data-action="copy" aria-label="Copy room code">${escape(room.code)} <small>COPY CODE ↗</small></button><p>Share this code with your friends.</p><ul class="roster">${room.lobby.map((p, i) => `<li><span class="avatar" style="background:${PALETTE[i]}">${names[p.animal]?.slice(0, 1)}</span><strong>${escape(p.name)} ${p.id === you ? "(you)" : ""}</strong><span>${p.ready ? "✓ Ready" : "Getting ready"}</span></li>`).join("")}</ul><button class="primary" data-action="ready">${room.lobby.find((p) => p.id === you)?.ready ? "Not ready" : "Ready ✓"}</button>${room.host === you ? '<button class="secondary" data-action="start">Start match ↗</button>' : '<p class="micro">The host will start when everyone is ready.</p>'}<p class="micro">${room.lobby.length}/8 animals · Minimum 2 · Everyone ready</p></section>`;
     return;
   }
   if (route === "play" && g) {
@@ -249,7 +244,7 @@ function practice() {
 }
 function connect(type) {
   const who = identity(),
-    url = $("#server-url").value.trim(),
+    url = serverURL(),
     code = $("#room-code")?.value;
   try {
     const parsed = new URL(url);
@@ -259,7 +254,6 @@ function connect(type) {
       throw Error("An HTTPS page needs a wss:// server");
     if (socket) socket.close();
     socket = new WebSocket(url);
-    localStorage.setItem("sp-server", url);
     toast("Connecting to server…");
     socket.onopen = () => send({ type, ...who, code });
     socket.onmessage = (e) => {
@@ -284,7 +278,7 @@ function connect(type) {
       }
     };
     socket.onerror = () =>
-      toast("Could not connect. Check the server and its address.");
+      toast("Could not connect. Check your internet connection and try again.");
     socket.onclose = () => {
       if (route === "play" || route === "lobby") {
         reset();
