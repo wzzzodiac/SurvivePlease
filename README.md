@@ -145,7 +145,7 @@ $env:ALLOWED_ORIGINS='https://wzzzodiac.github.io'
 npm run server
 ```
 
-Docker (archivo preparado; contenedor no probado en esta entrega):
+Docker (compilado y desplegado con Cloud Build en esta entrega):
 
 ```sh
 docker build -t surviveplease-server .
@@ -154,6 +154,18 @@ docker run --rm -p 3001:3001 -e ALLOWED_ORIGINS=https://wzzzodiac.github.io surv
 
 Configura TLS y upgrade WebSocket en el proxy. **`GET /health`** devuelve salud y cantidad de salas. Usa una instancia: las salas viven en memoria y se pierden al reiniciar. Varias réplicas necesitarían afinidad/coordinación. Los límites usan la IP del socket: detrás de un proxy se comparten entre los clientes que llegan desde la misma IP del proxy. No se confía automáticamente en `X-Forwarded-For`; configura el proxy antes de abrir un servicio a gran escala.
 
+## Cloud Run en producción
+
+Proyecto **Walter Projects** (`orbital-artillery`), servicio **surviveplease**, región **europe-west1**. Backend: `https://surviveplease-873648916633.europe-west1.run.app`; WebSocket: `wss://surviveplease-873648916633.europe-west1.run.app`. `/health` responde `200` y `{"ok":true,"rooms":0}` sin salas activas.
+
+Configuración: 1 CPU, 512 MiB, facturación por solicitudes, mínimo 0 y máximo 1 instancia, concurrencia 80 y timeout WebSocket de 3600 segundos. Origen permitido: `https://wzzzodiac.github.io`. Cloud Build compila el Dockerfile y despliega los cambios de `main` automáticamente. Las salas viven en memoria y se pierden al reiniciar o desplegar; no hay reconexión automática.
+
+El frontend Pages usa la variable de repositorio `VITE_WS_URL`. Las direcciones locales `ws://` guardadas en pruebas anteriores se sustituyen por el endpoint seguro en HTTPS; se conservan las direcciones personalizadas `wss://`. Cada actualización del frontend requiere ejecutar el workflow de Pages.
+
+En Cloud Run (`K_SERVICE`), se permiten hasta 40 conexiones por instancia y 80 aperturas/minuto por IP del proxy; se conservan 40 mensajes/s por conexión, cinco creaciones/minuto por IP y el máximo de cinco salas. No se confía en `X-Forwarded-For`. En local siguen los límites de 12 conexiones y 20 aperturas/minuto por IP. La prueba local de compatibilidad admite 40 conexiones con una misma IP y rechaza la 41 ([resultado](qa/cloud-run-capacity.json)); no es una prueba de carga de Cloud Run.
+
+Verificación pública con dos contextos de Edge y WebSocket reales: crear/unirse, listo/inicio, movimiento, privacidad de paquetes, disparos idénticos, desconexión y rechazo de un origen no autorizado ([resultado](qa/multiplayer-results.json)). Repetir con `QA_URL` y `QA_WS_URL` al ejecutar `node qa/multiplayer.mjs`.
+
 ## Estado
 
-Práctica completa y multijugador local funcional. **Backend no desplegado públicamente; no se afirma disponibilidad online.** Quedan despliegue público, pruebas de carga/red/dispositivos físicos, reconexión, revancha en la misma sala y más pulido de efectos/audio.
+Práctica y multijugador publicados y comprobados con dos clientes en la red pública. Quedan pruebas de carga/dispositivos físicos, reconexión, revancha en la misma sala y más pulido de efectos/audio.
