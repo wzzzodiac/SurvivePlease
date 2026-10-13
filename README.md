@@ -111,6 +111,12 @@ Se reduce un 68 % el número de llamadas de dibujo y un 49 % los píxeles del ca
 
 Pruebas específicas y capturas: [resultado](qa/fixes-results.json), [controles](qa/mobile-controls-v2.png), [horizontal](qa/mobile-landscape-v2.png), [núcleo](qa/final-duel-desktop.png). Se han comprobado con eventos táctiles emulados múltiples, sin errores de JavaScript.
 
+## Tema final: bosque y arena oscura
+
+Fondo petróleo `#172b31`, arena azul pizarra `#111d2d` / `#192a3d` y guía de disparo clara sin cambios. Texto crema sobre el fondo oscuro; paneles claros conservan texto oscuro. Los pinos y rocas usan cuatro lotes instanciados, sin texturas ni sombras adicionales: nueve pinos en escritorio y seis en móvil, menos en el menú para despejar el formulario. La decoración se adapta al encuadre y queda fuera del perímetro jugable, también en el núcleo.
+
+Perfil reproducible: `node qa/profile.mjs forest`, [resultado](qa/performance-forest.json). En la escena móvil emulada de ocho personajes y siete anillos, el render principal registra 70 llamadas frente a las 77 de la versión anterior, y 26 122 triángulos frente a 25 958. El JS de producción ronda 136 kB gzip. No son mediciones de FPS, batería o temperatura en un teléfono físico. Capturas y comprobación: [resultado](qa/forest-results.json), [menú](qa/forest-desktop-menu.png), [partida](qa/forest-desktop-play.png), [móvil](qa/forest-mobile-play.png).
+
 ## Desplegar frontend
 
 ```sh
