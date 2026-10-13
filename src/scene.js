@@ -2,6 +2,7 @@ import * as T from "three";
 import { animal } from "./animals.js";
 import { PineForest } from "./forest.js";
 import { actorVisible } from "./presentation.js";
+import { SHOT_IMPACT, shotProgress } from "./reveal.js";
 import { perimeterPoint, radiusFor, PALETTE } from "../shared/game.js";
 export class ArenaScene {
   constructor(container, labels) {
@@ -309,7 +310,7 @@ export class ArenaScene {
       a.model.position.set(pos.x, 0.25 + Math.sin(time * 3) * 0.025, pos.z);
       a.model.rotation.y = Math.PI / 2 - p.aim;
       const fallen =
-        !p.alive && !(state?.phase === "reveal" && state.clock < 0.65);
+        !p.alive && !(state?.phase === "reveal" && state.clock < SHOT_IMPACT);
       if (fallen) {
         a.model.rotation.z = T.MathUtils.damp(
           a.model.rotation.z,
@@ -370,7 +371,7 @@ export class ArenaScene {
           to = new T.Vector3(shot.to.x, 0.85, shot.to.z);
         const direction = to.clone().sub(from),
           beam = new T.Mesh(
-            new T.CylinderGeometry(0.035, 0.035, direction.length(), 8),
+            new T.CylinderGeometry(0.035, 0.035, 1, 8),
             new T.MeshBasicMaterial({
               color: p?.color || "#fff2c6",
               transparent: true,
@@ -378,6 +379,7 @@ export class ArenaScene {
             }),
           );
         beam.position.copy(from.clone().add(to).multiplyScalar(0.5));
+        beam.userData.flight = { from, to, length: direction.length() };
         beam.quaternion.setFromUnitVectors(
           new T.Vector3(0, 1, 0),
           direction.normalize(),
@@ -394,13 +396,20 @@ export class ArenaScene {
       }
     }
     this.shotGroup.visible =
-      ["reveal", "results", "finished"].includes(state?.phase) &&
-      !(state?.phase === "reveal" && state.clock < 0.65);
-    for (const o of this.shotGroup.children)
+      ["reveal", "results", "finished"].includes(state?.phase) && shotProgress(state) > 0;
+    const progress = shotProgress(state);
+    for (const o of this.shotGroup.children) {
+      if (o.userData.flight) {
+        const { from, to, length } = o.userData.flight;
+        o.scale.y = length * progress;
+        o.position.copy(from).lerp(to, progress / 2);
+      }
       if (o.geometry.type === "IcosahedronGeometry") {
+        o.visible = progress >= 1;
         o.rotation.y = time * 3;
         o.scale.setScalar(1 + Math.sin(time * 12) * 0.2);
       }
+    }
     this.renderer.render(this.scene, this.camera);
   }
 }
