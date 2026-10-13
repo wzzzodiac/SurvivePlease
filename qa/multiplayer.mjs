@@ -2,6 +2,8 @@ import { chromium } from "@playwright/test";
 import assert from "node:assert/strict";
 import { writeFile } from "node:fs/promises";
 import WebSocket from "ws";
+const site = process.env.QA_URL || "http://localhost:5173";
+const endpoint = process.env.QA_WS_URL || "ws://localhost:3001";
 const browser = await chromium.launch({ channel: "msedge", headless: true });
 const errors = [],
   packets = [[], []],
@@ -22,9 +24,10 @@ try {
         } catch {}
       }),
     );
-    await p.goto("http://localhost:5173");
+    await p.goto(site);
     await p.locator("#player-name").fill(i ? "Atlas" : "Cauce");
     await p.getByRole("button", { name: "Play with friends" }).click();
+    await p.locator("#server-url").fill(endpoint);
   }
   await pages[0].getByRole("button", { name: "Create room" }).click();
   await pages[0].waitForSelector(".code");
@@ -88,7 +91,7 @@ try {
     {},
     { timeout: 30000 },
   );
-  const reject = new WebSocket("ws://localhost:3001", {
+  const reject = new WebSocket(endpoint, {
     origin: "https://untrusted.example",
   });
   const originRejected = await new Promise((resolve) => {
