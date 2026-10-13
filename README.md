@@ -39,7 +39,7 @@ Al fijar, quedas bloqueado hasta la siguiente ronda. El disparo sale con todos l
 
 ## Reglas implementadas
 
-- 2–8 jugadores por sala; hasta 5 salas por proceso. Práctica con tres bots que se mueven, apuntan, confirman, eliminan y mueren.
+- 2–8 participantes por sala, humanos y bots; hasta 5 salas por proceso. El anfitrión puede usar **Add bot / Remove bot** antes de iniciar, incluso jugar solo con bots online. Los bots quedan listos automáticamente y no mantienen salas vacías ni heredan el anfitrión. Práctica con tres bots que se mueven, apuntan, confirman, eliminan y mueren.
 - Movimiento continuo por los seis bordes, incluyendo esquinas. Sin entrada al interior.
 - Posicionamiento oculto de hasta 20 segundos. Termina antes si todos los vivos confirman.
 - Revelación de personajes y nombres, pausa visual breve, disparos simultáneos, impactos, resultados y siguiente ronda. Los eliminados se ven caer únicamente en su propia resolución; después desaparecen y no vuelven a caer en revelaciones posteriores.
@@ -53,6 +53,10 @@ Al fijar, quedas bloqueado hasta la siguiente ronda. El disparo sale con todos l
 ## Autoridad y privacidad
 
 El cliente envía intención de movimiento (`-1`, `0`, `1`), ángulo y confirmación. El servidor calcula posición, reloj, bloqueo, colisiones, inactividad, contracción y ganador. No acepta coordenadas ni impactos declarados por clientes. La práctica comparte este motor de reglas. Los bots eligen ángulos hacia el centro con variación aleatoria sin consultar posiciones rivales ocultas.
+
+Las teclas mantenidas no reenvían su repetición automática: el envío periódico de intención ya mantiene el movimiento, evitando superar los 40 mensajes/s y provocar el cierre `1008`. El servidor transmite instantáneas a 20 Hz sin duplicar respuestas a cada entrada. `src/online-motion.js` predice visualmente al jugador local entre paquetes y reconcilia suavemente sobre el perímetro; al bloquear/disparar se conserva la posición autoritativa. Nunca inventa posiciones de rivales ocultos. La extrapolación del reloj está acotada a 120 ms.
+
+Regresión: `node qa/online.mjs` verifica dos clientes, llenar/quitar bots, una tecla repetida a 40 eventos/s durante cuatro segundos sin desconexión, posiciones ocultas y siete disparos simultáneos. Simula 70 ms de envío y 60–80 ms de recepción; comprueba que el avatar cambia entre instantáneas en el preview local. Admite `QA_URL` para comprobar el despliegue público. Estas pruebas no sustituyen mediciones en dispositivos físicos o redes móviles reales.
 
 Durante posicionamiento, cada paquete personalizado omite `s` y `aim` de todos los demás jugadores, incluso para espectadores eliminados. Identidad del lobby y confirmaciones son públicas. Durante revelación, todos reciben posiciones congeladas y los mismos rayos. Servidor a 20 Hz; el render interpola sobre el perímetro sin cortar esquinas por el interior.
 
