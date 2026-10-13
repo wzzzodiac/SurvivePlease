@@ -137,6 +137,8 @@ i {
   flex-shrink: 0;
 }
 .header-actions { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.bot-controls { display: flex; gap: 10px; }
+.bot-controls .secondary { flex: 1; padding-left: 10px; padding-right: 10px; }
 .header-actions .text-button { color: var(--cream); }
 .audio-controls { display: flex; align-items: center; gap: 4px; margin-left: auto; position: relative; pointer-events: auto; }
 .header-actions .audio-controls { margin-left: 0; }

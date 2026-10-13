@@ -107,6 +107,8 @@ wss.on("connection", (ws, req) => {
       } else if (c.room) {
         if (m.type === "ready") rooms.ready(c.room, id);
         if (m.type === "start") rooms.start(c.room, id);
+        if (m.type === "add-bot") rooms.bot(c.room, id);
+        if (m.type === "remove-bot") rooms.bot(c.room, id, true);
         if (m.type === "input") rooms.input(c.room, id, m);
         if (m.type === "leave") {
           rooms.leave(c.room, id);
@@ -114,7 +116,9 @@ wss.on("connection", (ws, req) => {
           send(ws, { type: "left" });
         }
       }
-      if (c.room) send(ws, rooms.state(c.room, id));
+      // Movement snapshots already go out at 20 Hz; avoid duplicate replies
+      // for every input packet, which makes arrival timing uneven.
+      if (c.room && m.type !== "input") send(ws, rooms.state(c.room, id));
     } catch (e) {
       send(ws, { type: "error", message: e.message });
     }
