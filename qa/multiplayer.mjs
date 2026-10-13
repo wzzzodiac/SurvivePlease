@@ -111,6 +111,8 @@ try {
     "qa/multiplayer-results.json",
     JSON.stringify(
       {
+        site,
+        endpoint,
         clients: 2,
         separateContexts: true,
         hiddenPacketsPrivate: true,
