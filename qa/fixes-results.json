@@ -57,7 +57,7 @@
   ],
   "multiTouchMovementPreserved": true,
   "touchAimIndependentOfMovement": true,
-  "mainFrameRate": 60.58588548601864,
+  "mainFrameRate": 60.54154746857997,
   "errors": [],
   "note": "Windows Edge headless. Mobile touch/DPR/rotation emulated, not physical device."
 }
