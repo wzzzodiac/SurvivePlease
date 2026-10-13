@@ -27,7 +27,7 @@ try {
     await p.goto(site);
     await p.locator("#player-name").fill(i ? "Atlas" : "Cauce");
     await p.getByRole("button", { name: "Play with friends" }).click();
-    await p.locator("#server-url").fill(endpoint);
+    assert.equal(await p.locator("#server-url").count(), 0);
   }
   await pages[0].getByRole("button", { name: "Create room" }).click();
   await pages[0].waitForSelector(".code");
