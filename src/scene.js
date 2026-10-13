@@ -1,13 +1,14 @@
 import * as T from "three";
 import { animal } from "./animals.js";
+import { PineForest } from "./forest.js";
 import { actorVisible } from "./presentation.js";
 import { perimeterPoint, radiusFor, PALETTE } from "../shared/game.js";
 export class ArenaScene {
   constructor(container, labels) {
     this.labels = labels;
     this.scene = new T.Scene();
-    this.scene.background = new T.Color("#d8e5df");
-    this.scene.fog = new T.Fog("#d8e5df", 36, 70);
+    this.scene.background = new T.Color("#172b31");
+    this.scene.fog = new T.Fog("#172b31", 36, 70);
     this.camera = new T.PerspectiveCamera(36, 1, 0.1, 100);
     this.mobile = matchMedia("(pointer: coarse), (max-width: 760px)").matches;
     this.renderer = new T.WebGLRenderer({ antialias: true, alpha: false });
@@ -90,7 +91,7 @@ export class ArenaScene {
       const r = radiusFor(i),
         g = new T.Group(),
         mat = new T.MeshStandardMaterial({
-          color: i % 2 ? "#6faaa1" : "#83b8a9",
+          color: i % 2 ? "#111d2d" : "#192a3d",
           roughness: 0.9,
           flatShading: true,
         });
@@ -150,27 +151,13 @@ export class ArenaScene {
   decorate() {
     const ground = new T.Mesh(
       new T.PlaneGeometry(200, 200),
-      new T.MeshStandardMaterial({ color: "#d8e5df", roughness: 1 }),
+      new T.MeshStandardMaterial({ color: "#172b31", roughness: 1 }),
     );
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -3;
     ground.receiveShadow = true;
     this.scene.add(ground);
-    for (let i = 0; i < 16; i++) {
-      const a = i * 2.399,
-        r = 11 + (i % 4) * 2;
-      const rock = new T.Mesh(
-        new T.IcosahedronGeometry(0.3 + (i % 3) * 0.25, 0),
-        new T.MeshStandardMaterial({
-          color: i % 2 ? "#a6bdb4" : "#bdccc0",
-          flatShading: true,
-          roughness: 1,
-        }),
-      );
-      rock.position.set(Math.cos(a) * r, -2.5, Math.sin(a) * r);
-      rock.rotation.set(i, i * 0.7, 0);
-      this.scene.add(rock);
-    }
+    this.forest = new PineForest(this.scene, this.mobile);
     const base = new T.Mesh(
       new T.CylinderGeometry(2.8, 1.8, 1.4, 6),
       new T.MeshStandardMaterial({
@@ -249,6 +236,8 @@ export class ArenaScene {
     this.scene.fog.far = dist + 55;
     this.camera.position.set(dist * 0.37, dist * 0.67, dist * 0.78);
     this.camera.lookAt(menu ? -1 : 0, 0, 0);
+    this.camera.updateMatrixWorld();
+    this.forest.layout(this.camera, radius, menu);
     const players = state?.players || [
       {
         id: "a",

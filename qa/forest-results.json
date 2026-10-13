@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "mobile": false,
+      "background": "172b31",
+      "arena": "111d2d",
+      "forestBatches": 4,
+      "trees": 9,
+      "finite": true,
+      "forestCastsShadows": false,
+      "errors": []
+    },
+    {
+      "mobile": true,
+      "background": "172b31",
+      "arena": "111d2d",
+      "forestBatches": 4,
+      "trees": 6,
+      "finite": true,
+      "forestCastsShadows": false,
+      "errors": []
+    }
+  ],
+  "note": "Edge on Windows; mobile emulation, no physical-device performance claim."
+}
