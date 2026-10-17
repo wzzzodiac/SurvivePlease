@@ -17,7 +17,7 @@ export const CONFIG = Object.freeze({
   finalRadius: 1.05,
   ringWidth: 1.15,
 });
-export const ANIMALS = ["fox", "rabbit", "penguin", "frog"];
+export const ANIMALS = ["fox", "rabbit", "penguin", "frog", "cat", "bear", "panda", "raccoon"];
 export const PALETTE = [
   "#ffab63",
   "#c5a4f5",

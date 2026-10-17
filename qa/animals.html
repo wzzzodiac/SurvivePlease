@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>SurvivePlease · Eight animals</title>
+<style>body{margin:0;background:#172b31;color:#fff2d6;font:14px sans-serif}canvas{display:block}.label{position:absolute;transform:translateX(-50%);font-weight:bold;letter-spacing:2px}h1{position:absolute;top:18px;left:32px;font-size:18px;letter-spacing:3px}</style>
+<h1>SURVIVEPLEASE / THE CREW</h1>
+<script type="module">
+import * as T from "three";
+import { animal } from "/src/animals.js";
+import { ANIMALS, PALETTE } from "/shared/game.js";
+const scene=new T.Scene(), renderer=new T.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight); renderer.setClearColor("#172b31"); document.body.append(renderer.domElement);
+const camera=new T.PerspectiveCamera(36,innerWidth/innerHeight,0.1,100);camera.position.set(2,2.3,13);camera.lookAt(0,0.4,0);camera.updateMatrixWorld(true);
+scene.add(new T.HemisphereLight("#fff7de","#536967",3));const light=new T.DirectionalLight("#fff4d8",3);light.position.set(-4,7,6);scene.add(light);
+window.modelsQA=[];
+ANIMALS.forEach((kind,i)=>{const model=animal(kind,PALETTE[i]);model.position.set((i%4-1.5)*2.1,i<4?0.8:-1.7,0);scene.add(model);modelsQA.push(model);
+const label=document.createElement("div");label.className="label";label.textContent=kind.toUpperCase();document.body.append(label);const p=model.position.clone().add(new T.Vector3(0,-0.15,0)).project(camera);label.style.left=(p.x+1)*innerWidth/2+"px";label.style.top=(1-p.y)*innerHeight/2+"px";});
+renderer.render(scene,camera);window.readyQA=true;
+</script></html>
