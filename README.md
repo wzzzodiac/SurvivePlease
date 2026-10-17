@@ -2,7 +2,7 @@
 
 **Muévete en secreto. Fija tu disparo. Todos a la vez.**
 
-Interfaz del juego íntegramente en inglés.
+Interfaz del juego íntegramente en inglés. Ocho animales seleccionables: Fox, Rabbit, Penguin, Frog, Cat, Bear, Panda y Raccoon; modelos procedurales sin texturas ni descargas adicionales.
 
 Prototipo web 3D de estrategia y predicción: animales de juguete en una arena hexagonal flotante. Modelos procedurales originales; sin assets de Roblox.
 

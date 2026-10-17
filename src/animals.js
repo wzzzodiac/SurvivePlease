@@ -6,15 +6,8 @@ export function animal(kind, color) {
   const root = new T.Group(),
     body = new T.Group();
   root.add(body);
-  const fur = mat(
-      kind === "fox"
-        ? "#ed9754"
-        : kind === "penguin"
-          ? "#293e4b"
-          : kind === "frog"
-            ? "#91bd73"
-            : "#e6d7f1",
-    ),
+  const fur = mat({ fox: "#ed9754", rabbit: "#e6d7f1", penguin: "#293e4b", frog: "#91bd73",
+      cat: "#95adbf", bear: "#ad7954", panda: "#eee9db", raccoon: "#a89f94" }[kind] || "#e6d7f1"),
     cream = mat("#fff2d6"),
     dark = mat("#21313a"),
     accent = mat(color),
@@ -40,7 +33,7 @@ export function animal(kind, color) {
     ball(dark, x * 0.16, 1.08, 0.337, 0.054, 0.07, 0.035);
     ball(cream, x * 0.145, 1.11, 0.364, 0.015, 0.02, 0.009);
     ball(
-      kind === "penguin" ? pink : fur,
+      kind === "penguin" ? pink : kind === "panda" ? dark : fur,
       x * 0.23,
       0.17,
       0.15,
@@ -48,7 +41,7 @@ export function animal(kind, color) {
       0.1,
       0.19,
     );
-    ball(fur, x * 0.36, 0.55, 0.02, 0.1, 0.24, 0.12);
+    ball(kind === "panda" ? dark : fur, x * 0.36, 0.55, 0.02, 0.1, 0.24, 0.12);
   }
   if (kind === "fox") {
     for (const x of [-1, 1]) {
@@ -100,6 +93,45 @@ export function animal(kind, color) {
       ball(dark, x * 0.28, 1.32, 0.28, 0.05, 0.07, 0.026);
     }
     ball(pink, 0, 0.92, 0.37, 0.13, 0.025, 0.02);
+  }
+  if (kind === "cat") {
+    for (const x of [-1, 1]) {
+      part(new T.ConeGeometry(0.18, 0.33, 3), fur, x * 0.28, 1.37, 0, 0, -x * 0.12);
+      part(new T.ConeGeometry(0.095, 0.2, 3), pink, x * 0.28, 1.39, 0.1);
+      ball(cream, x * 0.085, 0.94, 0.35, 0.11, 0.08, 0.08);
+      for (const y of [0.94, 1.0]) part(new T.BoxGeometry(0.15, 0.016, 0.018), dark, x * 0.26, y, 0.37, 0, x * 0.12);
+    }
+    ball(pink, 0, 0.99, 0.435, 0.04, 0.03, 0.025);
+    const tail = ball(fur, 0, 0.5, -0.4, 0.08, 0.1, 0.27);
+    tail.rotation.x = 0.6;
+    ball(fur, 0, 0.74, -0.59, 0.08, 0.18, 0.08);
+  }
+  if (kind === "bear" || kind === "panda") {
+    for (const x of [-1, 1]) {
+      ball(kind === "panda" ? dark : fur, x * 0.29, 1.34, 0, 0.16, 0.17, 0.12);
+      if (kind === "bear") ball(pink, x * 0.29, 1.35, 0.095, 0.085, 0.09, 0.025);
+      if (kind === "panda") {
+        const patch = ball(dark, x * 0.16, 1.08, 0.325, 0.105, 0.14, 0.055);
+        patch.rotation.z = x * 0.3;
+        ball(cream, x * 0.16, 1.09, 0.38, 0.039, 0.047, 0.022);
+        ball(dark, x * 0.16, 1.085, 0.4, 0.021, 0.029, 0.012);
+      }
+    }
+    ball(cream, 0, 0.94, 0.35, 0.19, 0.13, 0.12);
+    ball(dark, 0, 0.99, 0.46, 0.065, 0.047, 0.03);
+    ball(fur, 0, 0.4, -0.3, 0.12, 0.12, 0.12);
+  }
+  if (kind === "raccoon") {
+    for (const x of [-1, 1]) {
+      ball(fur, x * 0.29, 1.33, 0, 0.13, 0.15, 0.1);
+      ball(dark, x * 0.29, 1.34, 0.08, 0.075, 0.09, 0.025);
+      ball(dark, x * 0.18, 1.07, 0.32, 0.18, 0.105, 0.08);
+      ball(cream, x * 0.16, 1.09, 0.395, 0.05, 0.06, 0.022);
+      ball(dark, x * 0.16, 1.085, 0.414, 0.026, 0.038, 0.012);
+    }
+    ball(cream, 0, 0.94, 0.36, 0.16, 0.11, 0.12);
+    ball(dark, 0, 0.98, 0.47, 0.055, 0.04, 0.025);
+    for (let i = 0; i < 5; i++) ball(i % 2 ? dark : fur, 0, 0.42 - i * 0.025, -0.32 - i * 0.11, 0.14 - i * 0.009, 0.13 - i * 0.007, 0.085);
   }
   // A tiny toy blaster and a colored scarf make team ownership readable.
   part(

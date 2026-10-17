@@ -64,6 +64,10 @@ const names = {
   rabbit: "Rabbit",
   penguin: "Penguin",
   frog: "Frog",
+  cat: "Cat",
+  bear: "Bear",
+  panda: "Panda",
+  raccoon: "Raccoon",
 };
 function toast(message) {
   $("#toast").textContent = message;
@@ -81,7 +85,7 @@ function serverURL() {
   return import.meta.env.VITE_WS_URL || "ws://localhost:3001";
 }
 function choices() {
-  return `<fieldset class="animals"><legend>Choose your little survivor</legend>${ANIMALS.map((a, i) => `<button type="button" data-animal="${a}" class="animal ${selected === a ? "selected" : ""}" aria-pressed="${selected === a}" style="--animal:${PALETTE[i]}"><span>${["◆", "♧", "◒", "●"][i]}</span>${names[a]}</button>`).join("")}</fieldset>`;
+  return `<fieldset class="animals"><legend>Choose your little survivor</legend>${ANIMALS.map((a, i) => `<button type="button" data-animal="${a}" class="animal ${selected === a ? "selected" : ""}" aria-pressed="${selected === a}" style="--animal:${PALETTE[i]}"><span aria-hidden="true">${["◆", "♧", "◒", "●", "▲", "◕", "◉", "▰"][i]}</span>${names[a]}</button>`).join("")}</fieldset>`;
 }
 function badge() {
   return '<a class="brand" href="#" data-action="home"><span class="brand-icon">S<span>!</span></span><span>SURVIVE<span class="please">PLEASE</span></span></a>';
