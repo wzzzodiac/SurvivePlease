@@ -301,7 +301,7 @@ function connect(type) {
         reset();
         route = "online";
         render();
-        toast(e.code === 1008 ? "Too many actions. Please rejoin the room." : "Connection lost. Please join a new room.");
+        toast(e.code === 1008 ? (e.reason || "Too many actions. Please rejoin the room.") : "Connection lost. Please join a new room.");
       }
     };
   } catch (e) {
